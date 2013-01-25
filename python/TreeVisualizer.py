@@ -39,7 +39,7 @@ class TreeVisualizer:
     plt.gca().add_collection(patch)
     if update: plt.draw()
 
-  def draw_interactive(self, draw_neighbors=True):
+  def draw_interactive(self, draw_neighbors=True, draw_interaction_list=True):
     plt.ion()
     plt.show()
     self.draw_base(c='k')
@@ -59,6 +59,11 @@ class TreeVisualizer:
                          self.tree.properties['nborp'][j+1]):
             self.draw_node(self.tree.properties['nbori'][k], draw_points=False,
                            update=False, alpha=0.5, color='r')
+        if draw_interaction_list and self.tree._flags['has_ilst']:
+          for k in range(self.tree.properties['ilstp'][j],
+                         self.tree.properties['ilstp'][j+1]):
+            self.draw_node(self.tree.properties['ilsti'][k], draw_points=False,
+                           update=False, alpha=0.5, color='g')
         plt.axis(axis)
         plt.draw()
         s = "Node %d/%d:\n" % (j + 1, self.tree.lvlx[0,-1])
@@ -72,9 +77,9 @@ class TreeVisualizer:
             if 'siz' in self.tree.properties:
               s += " (size = %s)" % self.tree.properties['siz'][l]
             s += '\n'
-        if draw_neighbors and self.tree._flags['has_nbor']:
-          if self.tree.properties['nborp'][j] < self.tree.properties['nborp'][j+1]:
-            s += "  neighbors:\n"
-            for k in range(self.tree.properties['nborp'][j], self.tree.properties['nborp'][j+1]):
-              s += "    %s\n" % self.tree.properties['nbori'][k]
+        #if draw_neighbors and self.tree._flags['has_nbor']:
+          #if self.tree.properties['nborp'][j] < self.tree.properties['nborp'][j+1]:
+            #s += "  neighbors:\n"
+            #for k in range(self.tree.properties['nborp'][j], self.tree.properties['nborp'][j+1]):
+              #s += "    %s\n" % self.tree.properties['nbori'][k]
         print s.rstrip('\n')

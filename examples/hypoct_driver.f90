@@ -28,14 +28,17 @@
       real*8, allocatable :: x(:,:), siz(:), ext(:), rootx(:,:)
 
 !     geometry variables
-!       real*8, allocatable :: l(:,:), ctr(:,:)
+      real*8, allocatable :: l(:,:), ctr(:,:)
 
 !     child variables
-!       integer, allocatable :: chldx(:)
+      integer, allocatable :: chldp(:)
 
 !     neighbor variables
-!       integer, allocatable :: nborp(:), nbori(:)
-!       logical, allocatable :: per(:)
+      integer, allocatable :: nborp(:), nbori(:)
+      logical, allocatable :: per(:)
+
+!     interaction list variables
+      integer, allocatable :: ilstp(:), ilsti(:)
 
 !     local variables
       integer :: i
@@ -53,6 +56,7 @@
         x(1,i) = cos(theta)
         x(2,i) = sin(theta)
       enddo
+!       call random_number(x)
       siz = 0
       occ = 1
       lvlmax = -1
@@ -65,35 +69,42 @@
 !       print *, t - t0
 !       stop
 
-      print '(i8)', xi
-      print *
-      print '(2(i8))', lvlx
-      print *
-      print '(3(i8))', nodex
-      print *
+!       print '(i8)', xi
+!       print *
+!       print '(2(i8))', lvlx
+!       print *
+!       print '(3(i8))', nodex
+!       print *
 
 !       call cpu_time(t0)
-!       call hypoct_geom(d, lvlx, rootx, nodex, l, ctr)
+      call hypoct_geom(d, lvlx, rootx, nodex, l, ctr)
 !       call cpu_time(t)
 !       print *, t - t0
 
 !       print *
-!       print '(1(e12.4))', l
+!       print '(2(e12.4))', l
 !       print *
 !       print '(2(e12.4))', ctr
 
-!       call hypoct_chld(lvlx, nodex, chldx)
+      call hypoct_chld(lvlx, nodex, chldp)
 
-!       print *, chldx
+!       print '(i8)', chldp
 
-!       allocate(per(d))
-!       per = .false.
-!       call hypoct_nborsx(d, lvlx, nodex, chldx, per, nborp, nbori)
-!       call hypoct_nbors(d, lvlx, nodex, nborp, nbori)
+!       call hypoct_nbor(d, lvlx, nodex, nborp, nbori)
+      allocate(per(d))
+      per = .false.
+      call hypoct_nborx(d, lvlx, nodex, chldp, per, nborp, nbori)
 
 !       print *
-!       print *, nborp
+!       print '(i8)', nborp
 !       print *
-!       print *, nbori
+!       print '(i8)', nbori
+
+      call hypoct_ilst(lvlx, nodex, chldp, nborp, nbori, ilstp, ilsti)
+
+!       print *
+!       print '(i8)', ilstp
+!       print *
+      print '(i8)', ilsti
 
     end program

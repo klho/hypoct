@@ -18,11 +18,17 @@
 !*******************************************************************************
     module hypoct_python
 !*******************************************************************************
+!   HYPOCT_PYTHON - Python wrapper for HYPOCT
+!
+!   This file contains part of the Python interface to HYPOCT.
 !*******************************************************************************
 
      use hypoct
      implicit none
-     integer, allocatable :: lvlx(:,:), nodex(:,:), chldx(:), nborp(:), nbori(:)
+
+!    allocatable arrays
+     integer, allocatable :: lvlx(:,:), nodex(:,:), chldp(:), &
+                             nborp(:), nbori(:), ilstp(:), ilsti(:)
      real*8, allocatable :: l(:,:), ctr(:,:)
 
     contains
@@ -31,6 +37,7 @@
      subroutine hypoct_python_buildx(adap, intr, d, n, x, siz, occ, lvlmax, &
                                      ext, rootx, xi)
 !*******************************************************************************
+!    Python wrapper for HYPOCT_BUILDX.
 !*******************************************************************************
       implicit none
 
@@ -53,6 +60,7 @@
 !*******************************************************************************
      subroutine hypoct_python_chld(lvlx, nodex)
 !*******************************************************************************
+!    Python wrapper for HYPOCT_CHLD.
 !*******************************************************************************
       implicit none
 
@@ -63,13 +71,14 @@
       integer, intent(in) :: lvlx(2,0:*), nodex(3,*)
 !     ==========================================================================
 
-      call hypoct_chld(lvlx, nodex, chldx)
+      call hypoct_chld(lvlx, nodex, chldp)
 
      end subroutine
 
 !*******************************************************************************
      subroutine hypoct_python_geom(d, lvlx, rootx, nodex)
 !*******************************************************************************
+!    Python wrapper for HYPOCT_GEOM.
 !*******************************************************************************
       implicit none
 
@@ -86,8 +95,9 @@
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_python_nborsx(d, lvlx, nodex, chldx, per)
+     subroutine hypoct_python_ilst(lvlx, nodex, chldp, nborp, nbori)
 !*******************************************************************************
+!    Python wrapper for HYPOCT_ILST.
 !*******************************************************************************
       implicit none
 
@@ -95,11 +105,30 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: d, lvlx(2,0:*), nodex(3,*), chldx(*)
+      integer, intent(in) :: lvlx(2,0:*), nodex(3,*), chldp(*), nborp(*), &
+                             nbori(*)
+!     ==========================================================================
+
+      call hypoct_ilst(lvlx, nodex, chldp, nborp, nbori, ilstp, ilsti)
+
+     end subroutine
+
+!*******************************************************************************
+     subroutine hypoct_python_nborx(d, lvlx, nodex, chldp, per)
+!*******************************************************************************
+!    Python wrapper for HYPOCT_NBORX.
+!*******************************************************************************
+      implicit none
+
+!     ==========================================================================
+!     variable declarations
+!     --------------------------------------------------------------------------
+!     arguments
+      integer, intent(in) :: d, lvlx(2,0:*), nodex(3,*), chldp(*)
       logical, intent(in) :: per(d)
 !     ==========================================================================
 
-      call hypoct_nborsx(d, lvlx, nodex, chldx, per, nborp, nbori)
+      call hypoct_nborx(d, lvlx, nodex, chldp, per, nborp, nbori)
 
      end subroutine
 
