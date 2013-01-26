@@ -20,16 +20,32 @@ sys.path.append('../python/')
 
 import hypoct
 import numpy as np
-#import timeit
+import time
 
 if __name__ == '__main__':
-  n = 100
+  n = 2**20
   theta = np.linspace(0, 2*np.pi, n+1)[:n]
   x = np.array([np.cos(theta), np.sin(theta)])
-  tree = hypoct.build(x, 1)
-  print tree.xi
-  print
-  print tree.lvlx
-  print
-  print tree.nodex
-  #print timeit.timeit("tree = hypoct.build(x, 1)", "from __main__ import hypoct, x", number=1)
+
+  print "Building tree...",
+  t0 = time.clock()
+  tree = hypoct.Tree(x, occ=20)
+  t = time.clock() - t0
+  print "%12.4e (s)" % t
+
+  print "Generating geometry data..."
+  t0 = time.clock()
+  tree.generate_geometry_data()
+  t = time.clock() - t0
+
+  t0 = time.clock()
+  tree.generate_child_data()
+  t = time.clock() - t0
+
+  t0 = time.clock()
+  tree.find_neighbors()
+  t = time.clock() - t0
+
+  t0 = time.clock()
+  tree.get_interaction_list()
+  t = time.clock() - t0

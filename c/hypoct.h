@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * Copyright (C) 2013 Kenneth L. Ho
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -13,9 +13,9 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ */
 
-// Header file for C interface to HYPOCT
+// Header file for C interface to HYPOCT.
 
 extern void hypoct_build(
   int *d, int *n, double x[], int *occ, int *nlvl, int *nnode, int **lvlx,

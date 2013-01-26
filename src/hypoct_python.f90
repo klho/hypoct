@@ -20,7 +20,7 @@
 !*******************************************************************************
 !   HYPOCT_PYTHON - Python wrapper for HYPOCT
 !
-!   This file contains part of the Python interface to HYPOCT.
+!   This module is part of the Python interface to HYPOCT.
 !*******************************************************************************
 
      use hypoct

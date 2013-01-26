@@ -16,114 +16,163 @@
 #*******************************************************************************
 
 """
-Python module for interfacing with hypoct.
+Python module for interfacing with ``hypoct``.
 """
 
 from hypoct_python import hypoct_python
 import numpy as np
 
-def build(x, occ, adap='a', intr='p', siz=0, lvlmax=-1, ext=0):
+class Tree:
   """
   Build hyperoctree.
 
-  :param x: point coordinates
-  :type x: :class:`list`
-  :param occ: maximum leaf occupancy
-  :param adap: adaptivity setting
-  :param intr: interaction type
-  :param siz: sizes associated with each point
-  :param lvlmax: maximum tree depth
-  :param ext: extent of root node
-  :rtype: 
-  """
-  x   = np.asfortranarray(x)
-  siz = np.asfortranarray(siz)
-  ext = np.asfortranarray(ext)
-  d, n = x.shape
-  if (siz.size == 1): siz = siz * np.ones(n, order='F')
-  if (ext.size == 1): ext = ext * np.ones(d, order='F')
+  :param x:
+    Point coordinates, where the coordinate of point ``i`` is ``x[:,i]``.
+  :type x: :class:`numpy.ndarray`
 
-  rootx, xi = hypoct_python.hypoct_python_buildx(adap, intr, x, siz, occ,
-                                                 lvlmax, ext)
-  lvlx  = np.array(hypoct_python.lvlx,  order='F')
-  nodex = np.array(hypoct_python.nodex, order='F')
-  hypoct_python.lvlx  = None
-  hypoct_python.nodex = None
+  :keyword adap:
+    Adaptivity setting: adaptive, uniform.
+  :type adap: {``'a'``, ``'u'``}
 
-  tree = Tree(x, lvlx, rootx, xi, nodex, adap=adap, intr=intr, siz=siz,
-              lvlmax=lvlmax, ext=ext)
+  :keyword intr:
+    Interaction type: point-point, point-element (collocation or qualocation),
+    element-element (Galerkin).
+  :type intr: {``'p'``, ``'c'``, ``'g'``}
 
-  return tree
+  :keyword siz:
+    Sizes associated with each point. If ``siz`` is a single float, then it is
+    automatically expanded into an appropriately sized constant array. Ignored
+    if ``intr = 'p'``.
+  :type siz: :class:`numpy.ndarray`
 
-class Tree:
-  """
-  Tree
+  :keyword lvlmax:
+    Maximum tree depth. No maximum if ``lvlmax < 0``.
+  :type lvlmax: int
+
+  :keyword ext:
+    Extent of root node. If ``ext[i] <= 0``, then the extent in dimension ``i``
+    is calculated from the data. If ``ext`` is a single float, then it is
+    automatically expanded into an appropriately sized constant array.
+  :type ext: :class:`numpy.ndarray`
   """
 
-  def __init__(self, x, lvlx, rootx, xi, nodex, **kwargs):
-    self.x     = x
-    self.lvlx  = lvlx
-    self.rootx = rootx
-    self.xi    = xi
-    self.nodex = nodex
-    self.properties = kwargs
+  def __init__(self, x, occ=1, adap='a', intr='p', siz=0, lvlmax=-1, ext=0):
+    """
+    Initialize.
+    """
+    # process inputs
+    self.x = np.asfortranarray(  x)
+    siz    = np.asfortranarray(siz)
+    ext    = np.asfortranarray(ext)
+    d, n = self.x.shape
+    if (siz.size == 1): siz = siz * np.ones(n, order='F')
+    if (ext.size == 1): ext = ext * np.ones(d, order='F')
 
-    self._flags = {'has_chld': False,
-                   'has_geom': False,
-                   'has_ilst': False,
-                   'has_nbor': False}
+    # call Fortran routine
+    self.rootx, self.xi = hypoct_python.hypoct_python_buildx(
+                            adap, intr, self.x, siz, occ, lvlmax, ext
+                          )
+    self.lvlx  = np.array(hypoct_python.lvlx,  order='F')
+    self.nodex = np.array(hypoct_python.nodex, order='F')
+    hypoct_python.lvlx  = None
+    hypoct_python.nodex = None
+
+    # set properties
+    self.properties = {'adap':   adap,
+                       'intr':   intr,
+                        'siz':    siz,
+                     'lvlmax': lvlmax,
+                        'ext':    ext}
+
+    # set flags
+    self._flags = {'chld': False,
+                   'geom': False,
+                   'ilst': False,
+                   'nbor': False}
 
   def generate_child_data(self):
+    """
+    Generate child data.
+    """
+    # call Fortran routine
     hypoct_python.hypoct_python_chld(self.lvlx, self.nodex)
-    chldp = np.array(hypoct_python.chldp, order='F')
+    self.chldp = np.array(hypoct_python.chldp, order='F')
     hypoct_python.chldp = None
 
-    self.properties['chldp'] = chldp
-    self._flags['has_chld'] = True
+    # set flags
+    self._flags['chld'] = True
 
   def generate_geometry_data(self):
+    """
+    Generate geometry data.
+    """
+    # call Fortran routine
     hypoct_python.hypoct_python_geom(self.lvlx, self.rootx, self.nodex)
-    l   = np.array(hypoct_python.l,   order='F')
-    ctr = np.array(hypoct_python.ctr, order='F')
+    self.l   = np.array(hypoct_python.l,   order='F')
+    self.ctr = np.array(hypoct_python.ctr, order='F')
     hypoct_python.l   = None
     hypoct_python.ctr = None
 
-    self.properties['l'  ] = l
-    self.properties['ctr'] = ctr
-    self._flags['has_geom'] = True
+    # set flags
+    self._flags['geom'] = True
 
   def find_neighbors(self, per=False):
-    if not self._flags['has_chld']: self.generate_child_data()
+    """
+    Find neighbors.
+
+    The neighbors of a given node are those nodes at the same level which adjoin
+    it.
+
+    :param per:
+      Periodicity of root note. The domain is periodic in dimension ``i`` if
+      ``per[i] = True``. Use ``ext`` in :meth:`Tree` to control the extent of
+      the root.
+    :type per: :class:`numpy.ndarray`
+
+    .. tip::
+       To avoid array copies, typecast ``per`` as ``dtype='int32'``.
+    """
+    # generate child data if non-existent
+    if not self._flags['chld']: self.generate_child_data()
+
+    # process `per` input
     per = np.asfortranarray(per)
     if (per.size == 1):
       per = per * np.ones(self.x.shape[0], dtype='int32', order='F')
-    hypoct_python.hypoct_python_nborx(self.lvlx, self.nodex,
-                                      self.properties['chldp'], per)
-    nborp = np.array(hypoct_python.nborp, order='F')
-    nbori = np.array(hypoct_python.nbori, order='F')
+
+    # call Fortran routine
+    hypoct_python.hypoct_python_nborx(self.lvlx, self.nodex, self.chldp, per)
+    self.nborp = np.array(hypoct_python.nborp, order='F')
+    self.nbori = np.array(hypoct_python.nbori, order='F')
     hypoct_python.nborp = None
     hypoct_python.nbori = None
 
-    self.properties['per']   = per
-    self.properties['nborp'] = nborp
-    self.properties['nbori'] = nbori
-    self._flags['has_nbor'] = True
-    self._flags['has_ilst'] = False
+    # set properties
+    self.properties['per'] = per
+
+    # set flags
+    self._flags['nbor'] = True
+    self._flags['ilst'] = False
 
   def get_interaction_list(self):
-    if not self._flags['has_nbor']: self.find_neighbors()
-    hypoct_python.hypoct_python_ilst(
-      self.lvlx, self.nodex, self.properties['chldp'], self.properties['nborp'],
-      self.properties['nbori'])
-    ilstp = np.array(hypoct_python.ilstp, order='F')
-    ilsti = np.array(hypoct_python.ilsti, order='F')
+    """
+    Get interaction list.
+
+    The interaction list of a given node consists of those nodes who are the
+    children of its parent's neighbors but who are not themselves neighbors.
+
+    See :meth:`find_neighbors`.
+    """
+    # find neighbors if non-existent
+    if not self._flags['nbor']: self.find_neighbors()
+
+    # call Fortran routine
+    hypoct_python.hypoct_python_ilst(self.lvlx, self.nodex, self.chldp,
+                                     self.nborp, self.nbori)
+    self.ilstp = np.array(hypoct_python.ilstp, order='F')
+    self.ilsti = np.array(hypoct_python.ilsti, order='F')
     hypoct_python.ilstp = None
     hypoct_python.ilsti = None
 
-    self.properties['ilstp'] = ilstp
-    self.properties['ilsti'] = ilsti
-    self._flags['has_ilst'] = True
-
-  def update(self):
-    if self._flags['has_nbor']:
-      if not self._flags['has_ilst']: self.get_interaction_list()
+    # set flags
+    self._flags['ilst'] = True

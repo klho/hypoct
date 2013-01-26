@@ -20,7 +20,7 @@
 !*******************************************************************************
 !   HYPOCT_C - C wrapper for HYPOCT
 !
-!   This file contains part of the C interface to HYPOCT.
+!   This module is part of the C interface to HYPOCT.
 !*******************************************************************************
 
      use iso_c_binding

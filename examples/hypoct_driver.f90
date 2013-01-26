@@ -15,16 +15,21 @@
 !   this program.  If not, see <http://www.gnu.org/licenses/>.
 !*******************************************************************************
 
+!*******************************************************************************
     program hypoct_driver
-
+!*******************************************************************************
+!   Build quadtree on uniformly spaced points on the unit circle.
+!*******************************************************************************
       use hypoct
       implicit none
 
+!     ==========================================================================
+!     variable declarations
+!     --------------------------------------------------------------------------
 !     build variables
-      character :: adap, intr
-      integer :: d, n, occ, lvlmax
+      character :: adap = 'a', intr = 'p'
+      integer :: d = 2, n = 2**20, occ = 20, lvlmax = -1
       integer, allocatable :: lvlx(:,:), xi(:), nodex(:,:)
-
       real*8, allocatable :: x(:,:), siz(:), ext(:), rootx(:,:)
 
 !     geometry variables
@@ -41,70 +46,74 @@
       integer, allocatable :: ilstp(:), ilsti(:)
 
 !     local variables
-      integer :: i
-!       real*4 :: t, t0
-      real*8, parameter :: pi = 4*atan(1d0)
-      real*8 :: theta
+      integer :: nlvl, nnode, i
+      real*4 :: t, t0
+      real*8, parameter :: pi = 4*atan(1d0), i2mb = 4d-6, d2mb = 8d-6
+      real*8 :: theta, mb
+!     ==========================================================================
 
-      adap = 'a'
-      intr = 'p'
-      d = 2
-      n = 100
+!     set inputs
       allocate(x(d,n), siz(n), ext(d), rootx(2,d), xi(n))
       do i = 1, n
         theta = 2*pi*(i - 1) / n
         x(1,i) = cos(theta)
         x(2,i) = sin(theta)
       enddo
-!       call random_number(x)
       siz = 0
-      occ = 1
-      lvlmax = -1
       ext = 0
 
-!       call cpu_time(t0)
+!     build tree
+      print '(xa,$)', 'Building tree...           '
+      call cpu_time(t0)
       call hypoct_buildx(adap, intr, d, n, x, siz, occ, lvlmax, ext, lvlx, &
                          rootx, xi, nodex)
-!       call cpu_time(t)
-!       print *, t - t0
-!       stop
+      call cpu_time(t)
+      mb = i2mb*(size(lvlx) + size(xi) + size(nodex)) + d2mb*size(rootx)
+      print '(e12.4,xa,f6.2,xa)', t - t0, '(s) /', mb, ' (MB)'
 
-!       print '(i8)', xi
-!       print *
-!       print '(2(i8))', lvlx
-!       print *
-!       print '(3(i8))', nodex
-!       print *
-
-!       call cpu_time(t0)
+!     generate geometry data
+      print '(xa,$)', 'Generating geometry data...'
+      call cpu_time(t0)
       call hypoct_geom(d, lvlx, rootx, nodex, l, ctr)
-!       call cpu_time(t)
-!       print *, t - t0
+      call cpu_time(t)
+      mb = d2mb*(size(l) + size(ctr))
+      print '(e12.4,xa,f6.2,xa)', t - t0, '(s) /', mb, ' (MB)'
 
-!       print *
-!       print '(2(e12.4))', l
-!       print *
-!       print '(2(e12.4))', ctr
-
+!     generate child data
+      print '(xa,$)', 'Generating child data...   '
+      call cpu_time(t0)
       call hypoct_chld(lvlx, nodex, chldp)
+      call cpu_time(t)
+      mb = i2mb*size(chldp)
+      print '(e12.4,xa,f6.2,xa)', t - t0, '(s) /', mb, ' (MB)'
 
-!       print '(i8)', chldp
-
-!       call hypoct_nbor(d, lvlx, nodex, nborp, nbori)
+!     find neighbors
+      print '(xa,$)', 'Finding neighbors...       '
       allocate(per(d))
       per = .false.
+      call cpu_time(t0)
       call hypoct_nborx(d, lvlx, nodex, chldp, per, nborp, nbori)
+      call cpu_time(t)
+      mb = i2mb*(size(nborp) + size(nbori))
+      print '(e12.4,xa,f6.2,xa)', t - t0, '(s) /', mb, ' (MB)'
 
-!       print *
-!       print '(i8)', nborp
-!       print *
-!       print '(i8)', nbori
-
+!     get interaction list
+      print '(xa,$)', 'Getting interaction list...'
+      call cpu_time(t0)
       call hypoct_ilst(lvlx, nodex, chldp, nborp, nbori, ilstp, ilsti)
+      call cpu_time(t)
+      mb = i2mb*(size(ilstp) + size(ilsti))
+      print '(e12.4,xa,f6.2,xa)', t - t0, '(s) /', mb, ' (MB)'
 
-!       print *
-!       print '(i8)', ilstp
-!       print *
-      print '(i8)', ilsti
+!     print summary
+      nlvl  = lvlx(2,0)
+      nnode = lvlx(1,nlvl+1)
+      print 10, nlvl, nnode, nborp(nnode+1), ilstp(nnode+1)
+
+10    format(' ----------------------------------------------------', /, &
+             ' tree depth:                                 ', i8, /, &
+             ' number of nodes:                            ', i8, /, &
+             ' total number of neighbors:                  ', i8, /, &
+             ' total number of nodes in interaction lists: ', i8 /)
 
     end program
