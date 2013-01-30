@@ -1,4 +1,4 @@
-/*
+/*******************************************************************************
  * Copyright (C) 2013 Kenneth L. Ho
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -13,40 +13,93 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
+/*
+ * Header file for C interface to HYPOCT.
+ *
+ * All functions share the same name as the corresponding wrapped Fortran
+ * routine, with arguments of the same name playing the same role. Note that
+ * some functions have additional arguments (namely, array descriptors).
+ *
+ * Array outputs are returned in Fortran order; please see the Fortran source
+ * for details.
  */
 
-// Header file for C interface to HYPOCT.
-
+/*
+ * Build hyperoctree (see HYPOCT_BUILDX).
+ */
 extern void hypoct_build(
   int *d, int *n, double x[], int *occ, int *nlvl, int *nnode, int **lvlx,
   double rootx[], int xi[], int **nodex
 );
 
+/*
+ * Build hyperoctree (expert).
+ *
+ * Additional arguments:
+ *   NLVL  - tree depth      (output)
+ *   NNODE - number of nodes (output)
+ */
 extern void hypoct_buildx(
   char *adap, char *intr, int *d, int *n, double x[], double siz[], int *occ,
   int *lvlmax, double ext[], int *nlvl, int *nnode, int **lvlx, double rootx[],
   int xi[], int **nodex
 );
 
+/*
+ * Generate child data.
+ *
+ * Additional arguments:
+ *   NLVL  - tree depth      (input)
+ *   NNODE - number of nodes (input)
+ */
 extern void hypoct_chld(
   int *nlvl, int *nnode, int **lvlx, int **nodex, int **chldp
 );
 
+/*
+ * Generate geometry data.
+ *
+ * Additional arguments:
+ *   NLVL  - tree depth      (input)
+ *   NNODE - number of nodes (input)
+ */
 extern void hypoct_geom(
   int *d, int *nlvl, int *nnode, int **lvlx, double rootx[], int **nodex,
   double **l, double **ctr
 );
 
+/*
+ * Get interaction list.
+ *
+ * Additional arguments:
+ *   NLVL  - tree depth                                 ( input)
+ *   NNODE - number of nodes                            ( input)
+ *   NNBOR - total number of neighbors                  ( input)
+ *   NILST - total number of nodes in interaction lists (output)
+ */
 extern void hypoct_ilst(
   int *nlvl, int *nnode, int **lvlx, int **nodex, int **chldp, int *nnbor,
   int **nborp, int **nbori, int *nilst, int **ilstp, int **ilsti
 );
 
+/*
+ * Find neighbors (see HYPOCT_NBORX).
+ */
 extern void hypoct_nbor(
   int *d, int *nlvl, int *nnode, int **lvlx, int **nodex, int *nnbor,
   int **nborp, int **nbori
 );
 
+/*
+ * Find neighbors (expert).
+ *
+ * Additional arguments:
+ *   NLVL  - tree depth                ( input)
+ *   NNODE - number of nodes           ( input)
+ *   NNBOR - total number of neighbors (output)
+ */
 extern void hypoct_nborx(
   int *d, int *nlvl, int *nnode, int **lvlx, int **nodex, int **chldp,
   int per[], int *nnbor, int **nborp, int **nbori

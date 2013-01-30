@@ -16,7 +16,7 @@
 #*******************************************************************************
 
 """
-Python module for interfacing with ``hypoct``.
+Python module for interfacing with `hypoct`.
 """
 
 from hypoct_python import hypoct_python
@@ -27,31 +27,31 @@ class Tree:
   Build hyperoctree.
 
   :param x:
-    Point coordinates, where the coordinate of point ``i`` is ``x[:,i]``.
+    Point coordinates, where the coordinate of point `i` is `x[:,i]`.
   :type x: :class:`numpy.ndarray`
 
   :keyword adap:
     Adaptivity setting: adaptive, uniform.
-  :type adap: {``'a'``, ``'u'``}
+  :type adap: {`'a'`, `'u'`}
 
   :keyword intr:
     Interaction type: point-point, point-element (collocation or qualocation),
     element-element (Galerkin).
-  :type intr: {``'p'``, ``'c'``, ``'g'``}
+  :type intr: {`'p'`, `'c'`, `'g'`}
 
   :keyword siz:
-    Sizes associated with each point. If ``siz`` is a single float, then it is
+    Sizes associated with each point. If `siz` is a single float, then it is
     automatically expanded into an appropriately sized constant array. Ignored
-    if ``intr = 'p'``.
+    if `intr = 'p'`.
   :type siz: :class:`numpy.ndarray`
 
   :keyword lvlmax:
-    Maximum tree depth. No maximum if ``lvlmax < 0``.
+    Maximum tree depth. No maximum if `lvlmax < 0`.
   :type lvlmax: int
 
   :keyword ext:
-    Extent of root node. If ``ext[i] <= 0``, then the extent in dimension ``i``
-    is calculated from the data. If ``ext`` is a single float, then it is
+    Extent of root node. If `ext[i] <= 0`, then the extent in dimension `i` is
+    calculated from the data. If `ext` is a single float, then it is
     automatically expanded into an appropriately sized constant array.
   :type ext: :class:`numpy.ndarray`
   """
@@ -124,13 +124,15 @@ class Tree:
     it.
 
     :param per:
-      Periodicity of root note. The domain is periodic in dimension ``i`` if
-      ``per[i] = True``. Use ``ext`` in :meth:`Tree` to control the extent of
+      Periodicity of root note. The domain is periodic in dimension `i` if
+      `per[i] = True`. Use `ext` in :meth:`Tree` to control the extent of
       the root.
     :type per: :class:`numpy.ndarray`
 
-    .. tip::
-       To avoid array copies, typecast ``per`` as ``dtype='int32'``.
+    .. note::
+       In Fortran, `per` is stored as an array of logicals, which in C is
+       equivalent to an array of integers. To avoid array copies, typecast `per`
+       as `dtype='int32'`.
     """
     # generate child data if non-existent
     if not self._flags['chld']: self.generate_child_data()
@@ -145,7 +147,7 @@ class Tree:
     self.nborp = np.array(hypoct_python.nborp, order='F')
     self.nbori = np.array(hypoct_python.nbori, order='F')
     hypoct_python.nborp = None
-    hypoct_python.nbori = None
+    if hypoct_python.nbori.size > 0: hypoct_python.nbori = None
 
     # set properties
     self.properties['per'] = per
@@ -172,7 +174,7 @@ class Tree:
     self.ilstp = np.array(hypoct_python.ilstp, order='F')
     self.ilsti = np.array(hypoct_python.ilsti, order='F')
     hypoct_python.ilstp = None
-    hypoct_python.ilsti = None
+    if hypoct_python.ilsti.size > 0: hypoct_python.ilsti = None
 
     # set flags
     self._flags['ilst'] = True

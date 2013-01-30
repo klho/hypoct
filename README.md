@@ -3,7 +3,7 @@ hypoct
 
 A hyperoctree is a geometrical tree data structure where each node is recursively subdivided into orthants. It is a multidimensional generalization of the binary tree in 1D, the quadtree in 2D, and the octree in 3D.
 
-``hypoct`` contains routines for constructing and manipulating point hyperoctrees. Its primary purpose is to support fast tree-based algorithms such as the fast multipole method. In this context, its role is to provide an efficient hierarchical indexing scheme as well as to encode all near- and far-field information via neighbor and interaction lists.
+hypoct contains routines for constructing and manipulating point hyperoctrees. Its primary purpose is to support fast tree-based algorithms such as the fast multipole method. In this context, it provides an efficient hierarchical indexing scheme as well as encodes all near- and far-field information via neighbor and interaction lists.
 
 Special features include:
 
@@ -15,4 +15,4 @@ Special features include:
 
 - Support for periodic domains.
 
-``hypoct`` is written in Fortran with wrappers in C and Python. It is freely available under the GNU GPLv3; for alternate licenses, please contact the author.
+hypoct is written in Fortran with wrappers in C and Python. It is freely available under the GNU GPLv3; for alternate licenses, please contact the author.

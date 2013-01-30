@@ -27,9 +27,9 @@
 !
 !   HYPOCT contains routines for constructing and manipulating point
 !   hyperoctrees. Its primary purpose is to support fast tree-based algorithms
-!   such as the fast multipole method. In this context, its role is to provide
-!   an efficient hierarchical indexing scheme as well as to encode all near- and
-!   far-field information via neighbor and interaction lists.
+!   such as the fast multipole method. In this context, it provides an efficient
+!   hierarchical indexing scheme as well as encodes all near- and far-field
+!   information via neighbor and interaction lists.
 !
 !   Special features include:
 !
@@ -159,9 +159,9 @@
 !        LVLX(1,:)  - level pointer array
 !        LVLX(2,0)  - tree depth
 !        LVLX(2,1:) - level subdivision indices
-!      The nodes on level I have indices LVLX(1,I)+1:LVLX(1,I+1). Each level
-!      subdivison index is an integer bitstring denoting the dimensions that
-!      have been bisected.
+!      The nodes on level I have ordered indices LVLX(1,I)+1:LVLX(1,I+1). Each
+!      level subdivison index is an integer bitstring denoting the dimensions
+!      that have been bisected.
 !
 !    ROOTX : REAL*8, DIMENSION(2,D) INTENT(OUT)
 !      Root data array, containing the following information:
@@ -350,7 +350,7 @@
 !
 !    CHLDP : INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)
 !      Child pointer array. On exit, CHLDP has dimension NNODE + 1, where NNODE
-!      is the total number of nodes. The children of node I have indices
+!      is the total number of nodes. The children of node I have ordered indices
 !      CHLDP(I)+1:CHLDP(I+1).
 !*******************************************************************************
       implicit none
@@ -492,7 +492,7 @@
 !
 !    ILSTI : INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)
 !      Interaction list indices. On exit, ILSTI has dimension ILSTP(NNODE+1).
-!      The nodes in the interation list of node I have indices
+!      The nodes in the interation list of node I have ordered indices
 !      ILSTI(ILSTP(I)+1:ILSTP(I+1)).
 !*******************************************************************************
       implicit none
@@ -514,9 +514,11 @@
       nlvl = lvlx(2,0)
       allocate(ilstp(lvlx(1,nlvl+1)+1))
       ilstp(1:2) = 0
-      do i = lvlx(1,1)+1, lvlx(1,2)
-        ilstp(i+1) = 0
-      enddo
+      if (nlvl > 0) then
+        do i = lvlx(1,1)+1, lvlx(1,2)
+          ilstp(i+1) = 0
+        enddo
+      endif
 
 !     get interaction list
       milst = 0
@@ -626,7 +628,7 @@
 !
 !    NBORI : INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)
 !      Neighbor indices. On exit, NBORI has dimension NBORP(NNODE+1). The
-!      neighbors of node I have indices NBORI(NBORP(I)+1:NBORP(I+1)).
+!      neighbors of node I have ordered indices NBORI(NBORP(I)+1:NBORP(I+1)).
 !*******************************************************************************
       implicit none
 
@@ -709,7 +711,7 @@
           enddo
         endif
 
-!       look through children of parent and parent-neighbors
+!       look through children of parent and parent-neighbors (in order)
         do j = lvlx(1,i)+1, lvlx(1,i+1)
           ileaf = j - lvlx(1,i)
           prnt = nodex(2,j)

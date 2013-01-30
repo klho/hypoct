@@ -67,12 +67,11 @@ class TreeVisualizer:
     The node is drawn as a :class:`matplotlib.patches.Rectangle` instance.
     Points are drawn using :func:`matplotlib.pyplot.scatter`.
 
-    All keyword arguments prefaced with ``'node_'`` are passed to the node
-    drawing routine without the prefix, and, similarly all arguments prefixed
-    with ``'point_'`` are passed to the point drawing routine without the
-    prefix. For example, setting ``node_color='r'`` and ``point_c='b'`` passes
-    the keyword argument ``color='r'`` to the node drawer and ``c='b'`` to the
-    point drawer.
+    All keyword arguments prefaced with `'node_'` are passed to the node drawing
+    routine without the prefix, and, similarly all arguments prefixed with
+    `'point_'` are passed to the point drawing routine without the prefix. For
+    example, setting `node_color='r'` and `point_c='b'` passes the keyword
+    argument `color='r'` to the node drawer and `c='b'` to the point drawer.
 
     :param index:
       Node index.
@@ -128,11 +127,11 @@ class TreeVisualizer:
     ``Enter`` to continue) along with all neighbor and interaction list data, if
     available.
 
-    All keyword arguments prefaced with ``'base_'`` are passed to
-    :meth:`draw_base`; those prefaced with ``'node_'`` are passed to
-    :meth:`draw_node` when drawing each node; those prefaced with ``'nbor_'``
-    are passed to :meth:`draw_node` when drawing each node neighbor; and those
-    prefaced with ``'ilst_'`` are passed to :meth:`draw_node` when drawing each
+    All keyword arguments prefaced with `'base_'` are passed to
+    :meth:`draw_base`; those prefaced with `'node_'` are passed to
+    :meth:`draw_node` when drawing each node; those prefaced with `'nbor_'` are
+    passed to :meth:`draw_node` when drawing each node neighbor; and those
+    prefaced with `'ilst_'` are passed to :meth:`draw_node` when drawing each
     node in the interaction list.
 
     See :meth:`draw_base` and :meth:`draw_node` for details.
@@ -157,10 +156,10 @@ class TreeVisualizer:
     for kw in kwargs:
       key = kw.split('_')
       if   key[0] ==  'base':  base_kwargs[          key[1]] = kwargs[kw]
-      elif key[0] ==  'node':  node_kwargs[          key   ] = kwargs[kw]
+      elif key[0] ==  'node':  node_kwargs[          kw    ] = kwargs[kw]
       elif key[0] ==  'nbor':  nbor_kwargs['node_' + key[1]] = kwargs[kw]
       elif key[0] == ' ilst':  ilst_kwargs['node_' + key[1]] = kwargs[kw]
-      elif key[0] == 'point': point_kwargs[          key   ] = kwargs[kw]
+      elif key[0] == 'point': point_kwargs[          kw    ] = kwargs[kw]
       else: raise Warning("unrecognized keyword '%s'" % kw)
     node_kwargs.update(point_kwargs)
 

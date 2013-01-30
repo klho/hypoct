@@ -1,4 +1,4 @@
-/*
+/*******************************************************************************
  * Copyright (C) 2013 Kenneth L. Ho
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -13,9 +13,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-// Build quadtree on uniformly spaced points on the unit circle.
+ ******************************************************************************/
 
 #include <hypoct.h>
 #include <math.h>
@@ -23,27 +21,19 @@
 #include <stdlib.h>
 #include <time.h>
 
+/* Build quadtree on uniformly spaced points on the unit circle. */
 int main() {
 
   // local variables
-  double t;
-  clock_t t0;
-
-  /****************************************************************************/
-  /* build tree                                                               */
-  /****************************************************************************/
-  // build variables
-  char adap = 'a', intr = 'p';
-  int d = 2, n = pow(2, 20), occ = 20, lvlmax = -1, nlvl, nnode,
-      *lvlx, *xi, *nodex;
-  double *x, *siz, ext[d], rootx[d][2];
+  char *fmt = "%11.4e (s) / %6.2f (MB)\n";
   int i;
-  double pi = 4*atan(1), theta;
+  double pi = 4*atan(1), theta, mb;
+  clock_t t, t0;
 
   // set inputs (allocate on heap for large arrays)
-    x = (double *) malloc(d*n*sizeof(double));
-  siz = (double *) malloc(  n*sizeof(double));
-   xi = (   int *) malloc(  n*sizeof(   int));
+  int d = 2, n = pow(2, 20);
+  double  *x = (double *) malloc(d*n*sizeof(double)),
+        *siz = (double *) malloc(  n*sizeof(double)), ext[d];
   for (i = 0; i < n; i++) {
     theta = 2*pi*i / n;
     x[2*i  ] = cos(theta);
@@ -52,57 +42,73 @@ int main() {
   }
   for (i = 0; i < d; i++) { ext[i] = 0; }
 
+  // print input summary
+  printf("\
+Number of points:                           %8i\n\
+----------------------------------------------------\n",
+n
+);
+
   // build tree
   printf("Building tree...            ");
+  char adap = 'a', intr = 'p';
+  int occ = 20, lvlmax = -1, nlvl, nnode, *lvlx,
+      *xi = (int *) malloc(n*sizeof(int)), *nodex;
+  double rootx[d][2];
   t0 = clock();
   hypoct_buildx(&adap, &intr, &d, &n, x, siz, &occ, &lvlmax, ext,
                 &nlvl, &nnode, &lvlx, *rootx, xi, &nodex);
-  t = ((double)clock() - t0) / CLOCKS_PER_SEC;
-  printf("%12.4e (s)\n", t);
-  /****************************************************************************/
-
-  // generate geometry data
-  double *l, *ctr;
-  printf("Generating geometry data... ");
-  t0 = clock();
-  hypoct_geom(&d, &nlvl, &nnode, &lvlx, *rootx, &nodex, &l, &ctr);
-  t = ((double)clock() - t0) / CLOCKS_PER_SEC;
-  printf("%12.4e (s)\n", t);
+  t = clock();
+  mb = 1e-6*(sizeof(int)*(2*(nlvl + 2) + 3*(nnode+1) + n) +
+             sizeof(double)*(2*d));
+  printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
   // generate child data
-  int *chldp;
   printf("Generating child data...    ");
+  int *chldp;
   t0 = clock();
   hypoct_chld(&nlvl, &nnode, &lvlx, &nodex, &chldp);
-  t = ((double)clock() - t0) / CLOCKS_PER_SEC;
-  printf("%12.4e (s)\n", t);
+  t = clock();
+  mb = 1e-6*sizeof(int)*(nnode + 1);
+  printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
+
+  // generate geometry data
+  printf("Generating geometry data... ");
+  double *l, *ctr;
+  t0 = clock();
+  hypoct_geom(&d, &nlvl, &nnode, &lvlx, *rootx, &nodex, &l, &ctr);
+  t = clock();
+  mb = 1e-6*sizeof(double)*(2*nlvl + 2*nnode);
+  printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
   // find neighbors
+  printf("Finding neighbors...        ");
   int per[d], nnbor, *nborp, *nbori;
   for (i = 0; i < d; i++) { per[i] = 0; }
-  printf("Finding neighbors...        ");
   t0 = clock();
   hypoct_nborx(&d, &nlvl, &nnode, &lvlx, &nodex, &chldp, per, &nnbor, &nborp,
                &nbori);
-  t = ((double)clock() - t0) / CLOCKS_PER_SEC;
-  printf("%12.4e (s)\n", t);
+  t = clock();
+  mb = 1e-6*sizeof(int)*(nnode + 1 + nnbor);
+  printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
   // get interaction list
-  int nilst, *ilstp, *ilsti;
   printf("Getting interaction lists...");
+  int nilst, *ilstp, *ilsti;
   t0 = clock();
   hypoct_ilst(&nlvl, &nnode, &lvlx, &nodex, &chldp, &nnbor, &nborp, &nbori,
               &nilst, &ilstp, &ilsti);
-  t = ((double)clock() - t0) / CLOCKS_PER_SEC;
-  printf("%12.4e (s)\n", t);
+  t = clock();
+  mb = 1e-6*sizeof(int)*(nnode + 1 + nilst);
+  printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
-  // print summary
+  // print output summary
   printf("\
 ----------------------------------------------------\n\
-tree depth:                                 %8i\n\
-number of nodes:                            %8i\n\
-total number of neighbors:                  %8i\n\
-total number of nodes in interaction lists: %8i\n",
+Tree depth:                                 %8i\n\
+Number of nodes:                            %8i\n\
+Total number of neighbors:                  %8i\n\
+Total number of nodes in interaction lists: %8i\n",
 nlvl, nnode, nborp[nnode], ilstp[nnode]
 );
 
