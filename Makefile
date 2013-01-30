@@ -61,7 +61,7 @@ c: fortran $(LIB)_c.o
 
 python: fortran $(LIB)_python.so
 
-doc:
+doc: python
 	cd $(DOC) ; make html ; make latexpdf
 
 fortran_driver: fortran
