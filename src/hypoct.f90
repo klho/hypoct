@@ -56,7 +56,7 @@
 !   hypoct_buildx - build hyperoctree (expert)
 !   hypoct_chld   - generate child data
 !   hypoct_geom   - generate geometry data
-!   hypoct_ilst   - get interaction list
+!   hypoct_ilst   - get interaction lists
 !   hypoct_nbor   - find neighbors
 !   hypoct_nborx  - find neighbors (expert)
 !*******************************************************************************
@@ -226,7 +226,6 @@
       mleaf = 1
       allocate(lvlx(2,0:mlvl+1), nodex(3,mnode+1), ctr(d,mleaf), &
                leaf(mleaf+1), div(mleaf))
-
       lvlx(1,0) = 0
       lvlx(1,1) = 1
       lvlx(2,1) = 0
@@ -464,7 +463,7 @@
 !*******************************************************************************
      subroutine hypoct_ilst(lvlx, nodex, chldp, nborp, nbori, ilstp, ilsti)
 !*******************************************************************************
-!    Get interaction list. The interaction list of a given node consists of
+!    Get interaction lists. The interaction list of a given node consists of
 !    those nodes who are the children of its parent's neighbors but who are not
 !    themselves neighbors.
 !
@@ -520,7 +519,7 @@
         enddo
       endif
 
-!     get interaction list
+!     get interaction lists
       milst = 0
       allocate(ilsti(milst))
       nilst = 0

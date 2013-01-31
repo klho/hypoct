@@ -155,9 +155,9 @@ class Tree:
     self._flags['nbor'] = True
     self._flags['ilst'] = False
 
-  def get_interaction_list(self):
+  def get_interaction_lists(self):
     """
-    Get interaction list.
+    Get interaction lists.
 
     The interaction list of a given node consists of those nodes who are the
     children of its parent's neighbors but who are not themselves neighbors.

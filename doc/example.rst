@@ -70,9 +70,9 @@ To construct a triply periodic tree with unit cell extents of, say, 10, 2, and 2
   x = np.random.rand(3, 100)
   tree = hypoct.Tree(x, ext=[10., 2., 2.])
   tree.find_neighbors(per=True)
-  tree.get_interaction_list()
+  tree.get_interaction_lists()
 
-The periodicity of the interaction list inherits from that of the neighbor list.
+The periodicity of the interaction lists inherits from that of the neighbor list.
 
 Tree for Galerkin triangle code
 -------------------------------

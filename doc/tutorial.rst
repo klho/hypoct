@@ -160,7 +160,7 @@ Getting interaction lists
 
 Recall that interaction lists are often utilized in fast multipole-type algorithms to systematically cover the far field. To get interaction lists for all nodes, type::
 
->>> tree.get_interaction_list()
+>>> tree.get_interaction_lists()
 
 This command requires that the neighbor data from :meth:`hypoct.Tree.find_neighbors` have already been generated; if this is not the case, then this is done automatically using default settings. Outputs include the pointer and index arrays ``tree.ilstp`` and ``tree.ilsti``, respectively.
 
@@ -181,7 +181,7 @@ A complete program for building a tree and generating all auxiliary data is give
   tree.generate_child_data()
   tree.generate_geometry_data()
   tree.find_neighbors()
-  tree.get_interaction_list()
+  tree.get_interaction_lists()
 
 This is a slightly modified and abridged version of the driver program ``examples/hypoct_driver.py``.
 

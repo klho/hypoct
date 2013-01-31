@@ -103,7 +103,7 @@
      subroutine hypoct_c_chld(nlvl, nnode, lvlx, nodex, chldp) &
                 bind(C, name="hypoct_chld")
 !*******************************************************************************
-!    C wrapper for HYPOCT_CHLD
+!    C wrapper for HYPOCT_CHLD.
 !*******************************************************************************
       implicit none
 
