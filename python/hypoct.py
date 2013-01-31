@@ -19,7 +19,7 @@
 Python module for interfacing with `hypoct`.
 """
 
-from hypoct_python import hypoct_python
+from hypoct_python import hypoct_python as _hypoct
 import numpy as np
 
 class Tree:
@@ -69,13 +69,12 @@ class Tree:
     if (ext.size == 1): ext = ext * np.ones(d, order='F')
 
     # call Fortran routine
-    self.rootx, self.xi = hypoct_python.hypoct_python_buildx(
-                            adap, intr, self.x, siz, occ, lvlmax, ext
-                          )
-    self.lvlx  = np.array(hypoct_python.lvlx,  order='F')
-    self.nodex = np.array(hypoct_python.nodex, order='F')
-    hypoct_python.lvlx  = None
-    hypoct_python.nodex = None
+    self.rootx, self.xi = _hypoct.hypoct_python_buildx(adap, intr, self.x, siz,
+                                                       occ, lvlmax, ext)
+    self.lvlx  = np.array(_hypoct.lvlx,  order='F')
+    self.nodex = np.array(_hypoct.nodex, order='F')
+    _hypoct.lvlx  = None
+    _hypoct.nodex = None
 
     # set properties
     self.properties = {'adap':   adap,
@@ -95,9 +94,9 @@ class Tree:
     Generate child data.
     """
     # call Fortran routine
-    hypoct_python.hypoct_python_chld(self.lvlx, self.nodex)
-    self.chldp = np.array(hypoct_python.chldp, order='F')
-    hypoct_python.chldp = None
+    _hypoct.hypoct_python_chld(self.lvlx, self.nodex)
+    self.chldp = np.array(_hypoct.chldp, order='F')
+    _hypoct.chldp = None
 
     # set flags
     self._flags['chld'] = True
@@ -107,11 +106,11 @@ class Tree:
     Generate geometry data.
     """
     # call Fortran routine
-    hypoct_python.hypoct_python_geom(self.lvlx, self.rootx, self.nodex)
-    self.l   = np.array(hypoct_python.l,   order='F')
-    self.ctr = np.array(hypoct_python.ctr, order='F')
-    hypoct_python.l   = None
-    hypoct_python.ctr = None
+    _hypoct.hypoct_python_geom(self.lvlx, self.rootx, self.nodex)
+    self.l   = np.array(_hypoct.l,   order='F')
+    self.ctr = np.array(_hypoct.ctr, order='F')
+    _hypoct.l   = None
+    _hypoct.ctr = None
 
     # set flags
     self._flags['geom'] = True
@@ -143,11 +142,11 @@ class Tree:
       per = per * np.ones(self.x.shape[0], dtype='int32', order='F')
 
     # call Fortran routine
-    hypoct_python.hypoct_python_nborx(self.lvlx, self.nodex, self.chldp, per)
-    self.nborp = np.array(hypoct_python.nborp, order='F')
-    self.nbori = np.array(hypoct_python.nbori, order='F')
-    hypoct_python.nborp = None
-    if hypoct_python.nbori.size > 0: hypoct_python.nbori = None
+    _hypoct.hypoct_python_nborx(self.lvlx, self.nodex, self.chldp, per)
+    self.nborp = np.array(_hypoct.nborp, order='F')
+    self.nbori = np.array(_hypoct.nbori, order='F')
+    _hypoct.nborp = None
+    if _hypoct.nbori.size > 0: _hypoct.nbori = None
 
     # set properties
     self.properties['per'] = per
@@ -169,12 +168,12 @@ class Tree:
     if not self._flags['nbor']: self.find_neighbors()
 
     # call Fortran routine
-    hypoct_python.hypoct_python_ilst(self.lvlx, self.nodex, self.chldp,
+    _hypoct.hypoct_python_ilst(self.lvlx, self.nodex, self.chldp,
                                      self.nborp, self.nbori)
-    self.ilstp = np.array(hypoct_python.ilstp, order='F')
-    self.ilsti = np.array(hypoct_python.ilsti, order='F')
-    hypoct_python.ilstp = None
-    if hypoct_python.ilsti.size > 0: hypoct_python.ilsti = None
+    self.ilstp = np.array(_hypoct.ilstp, order='F')
+    self.ilsti = np.array(_hypoct.ilsti, order='F')
+    _hypoct.ilstp = None
+    if _hypoct.ilsti.size > 0: _hypoct.ilsti = None
 
     # set flags
     self._flags['ilst'] = True
