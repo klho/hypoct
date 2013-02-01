@@ -20,7 +20,7 @@ vpath %.mod $(BIN)
 vpath %.h   $(C)
 vpath %.so  $(PYTHON)
 
-.PHONY: help all doc fortran c python fortran_driver c_driver python_driver clean clean_fortran clean_c clean_python clean_driver rebuild
+.PHONY: all fortran c python doc fortran_driver c_driver python_driver clean clean_fortran clean_c clean_python clean_doc clean_driver rebuild help
 
 all: fortran c python
 
