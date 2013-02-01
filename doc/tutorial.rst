@@ -6,13 +6,7 @@ We now present a tutorial on using the Python interface to hypoct. From here on,
 Overview
 --------
 
-The Python interface is located in the directory ``python/``, which should contain:
-
-- ``hypoct.py``: the main Python module;
-- ``hypoct_python.so``: the F2PY-ed Fortran library; and
-- ``TreeVisualizer.py``: an auxiliary Python module to display trees in 2D.
-
-The file ``hypoct_python.so`` contains all wrapped routines and is imported by ``hypoct.py``, which creates a somewhat more convenient (but still pretty bare-bones) object-oriented interface around it. For details on the Python modules, please see the :doc:`api`; for details on data formats, please refer to the Fortran source code.
+The Python interface is located in the directory ``python``, which should contain directory ``hypoct``, organizing the main Python package, and ``hypoct_python.so``, the F2PY-ed Fortran library. The file ``hypoct_python.so`` contains all wrapped routines and is imported by :mod:`hypoct`, which creates a somewhat more convenient (but still pretty bare-bones) object-oriented interface around it. For details on the Python modules, please see the :doc:`api`; for details on data formats, please refer to the Fortran source code.
 
 We will now step through the process of running a program calling hypoct from Python, following the Python driver program as a guide.
 
@@ -23,7 +17,7 @@ The first step is to import :mod:`hypoct` by issuing the command::
 
 >>> import hypoct
 
-at the Python prompt. This should work if you are in the ``python/`` directory; otherwise, you may have to first type something like:
+at the Python prompt. This should work if you are in the ``python`` directory; otherwise, you may have to first type something like:
 
 >>> import sys
 >>> sys.path.append(/path/to/hypoct/python/)
@@ -188,9 +182,9 @@ This is a slightly modified and abridged version of the driver program ``example
 Visualizing trees in 2D
 -----------------------
 
-Trees in 2D can be viewed graphically using the :mod:`TreeVisualizer` module, which contains the :class:`TreeVisualizer.TreeVisualizer` class. To use the viewer, type::
+Trees in 2D can be viewed graphically using the :class:`hypoct.tools.TreeVisualizer` class. To use the viewer, type::
 
->>> from TreeVisualizer import TreeVisualizer
+>>> from hypoct.tools import TreeVisualizer
 >>> view = TreeVisualizer(tree)
 >>> view.draw_interactive()
 

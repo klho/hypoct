@@ -1,7 +1,7 @@
 Python API
 ==========
 
-This section provides the auto-generated API for the Python modules :mod:`hypoct` and :mod:`TreeVisualizer`.
+This section provides the auto-generated API for the Python modules :mod:`hypoct` and :mod:`hypoct.tools`.
 
 hypoct
 ------
@@ -11,10 +11,10 @@ hypoct
     :undoc-members:
     :show-inheritance:
 
-TreeVisualizer
---------------
+hypoct.tools
+------------
 
-.. automodule:: TreeVisualizer
+.. automodule:: hypoct.tools
     :members:
     :undoc-members:
     :show-inheritance:

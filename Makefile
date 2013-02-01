@@ -22,23 +22,7 @@ vpath %.so  $(PYTHON)
 
 .PHONY: help all doc fortran c python fortran_driver c_driver python_driver clean clean_fortran clean_c clean_python clean_driver rebuild
 
-help:
-	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  all            to make all code libraries (Fortran, C, Python)"
-	@echo "  fortran        to make the Fortran library"
-	@echo "  c              to make the C wrapper to the Fortran library"
-	@echo "  python         to make the Python wrapper to the Fortran library"
-	@echo "  doc            to make HTML and PDF documentation"
-	@echo "  fortran_driver to make the Fortran driver program"
-	@echo "  c_driver       to make the C driver program"
-	@echo "  python_driver  to make the Python driver program"
-	@echo "  clean          to remove all compiled objects"
-	@echo "  clean_fortran  to remove all compiled Fortran objects"
-	@echo "  clean_c        to remove all compiled C objects"
-	@echo "  clean_python   to remove all compiled Python objects"
-	@echo "  clean_doc      to remove all compiled documentation"
-	@echo "  clean_driver   to remove all compiled driver executables"
-	@echo "  rebuild        to clean and rebuild all libraries"
+all: fortran c python
 
 $(LIB).o: $(LIB).f90
 	$(FC) $(FFLAGS) -J$(BIN) -c $< -o $(BIN)/$@
@@ -52,8 +36,6 @@ $(LIB)_python.so: $(LIB)_python.f90 $(LIB).o
 	rm -f $(LIB).mod
 	mv $(LIB)_python.so $(BIN)
 	cd $(PYTHON) ; ln -fs ../$(BIN)/$(LIB)_python.so
-
-all: fortran c python
 
 fortran: $(LIB).o
 
@@ -85,7 +67,8 @@ clean_c:
 
 clean_python:
 	cd $(BIN) ; rm -f $(LIB)_python.so
-	cd $(PYTHON) ; rm -f $(LIB)_python.so $(LIB).pyc TreeVisualizer.pyc
+	cd $(PYTHON) ; rm -f $(LIB)_python.so
+	cd $(PYTHON)/hypoct ; rm -f __init__.pyc tools.pyc
 
 clean_doc:
 	cd $(DOC); make clean
@@ -94,3 +77,21 @@ clean_driver:
 	cd $(EXAMPLES) ; rm -f $(LIB)_driver $(LIB)_driver.pyc
 
 rebuild: clean all
+
+help:
+	@echo "Please use \`make <target>' where <target> is one of"
+	@echo "  all            to make all code libraries (Fortran, C, Python)"
+	@echo "  fortran        to make the Fortran library"
+	@echo "  c              to make the C wrapper to the Fortran library"
+	@echo "  python         to make the Python wrapper to the Fortran library"
+	@echo "  doc            to make HTML and PDF documentation"
+	@echo "  fortran_driver to make the Fortran driver program"
+	@echo "  c_driver       to make the C driver program"
+	@echo "  python_driver  to make the Python driver program"
+	@echo "  clean          to remove all compiled objects"
+	@echo "  clean_fortran  to remove all compiled Fortran objects"
+	@echo "  clean_c        to remove all compiled C objects"
+	@echo "  clean_python   to remove all compiled Python objects"
+	@echo "  clean_doc      to remove all compiled documentation"
+	@echo "  clean_driver   to remove all compiled driver executables"
+	@echo "  rebuild        to clean and rebuild all libraries"

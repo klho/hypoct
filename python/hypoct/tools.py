@@ -16,7 +16,7 @@
 #*******************************************************************************
 
 """
-Python module for visualizing 2D hyperoctrees.
+Additional tools for :mod:`hypoct`.
 """
 
 import matplotlib as mpl

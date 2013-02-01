@@ -29,10 +29,6 @@ There are several targets available to compile, namely:
 
 To see all available targets, switch the working directory to the root of the local repository and type::
 
-$ make
-
-or::
-
 $ make help
 
 Hopefully the instructions are self-explanatory; for more explicit directions, please see below. Before beginning, view and edit the file ``Makefile`` to ensure that all options are properly set for your system. In particular, if you will not be using GFortran or GCC, be sure to set alternate compilers as appropriate.
@@ -51,15 +47,19 @@ $ make python
 
 To compile all three, type::
 
+$ make
+
+or::
+
 $ make all
 
-All object files are placed in the directory ``bin/``.
+All object files are placed in the directory ``bin``.
 
 To compile the documentation files, type::
 
 $ make doc
 
-Output HTML and PDF files are placed in the directory ``doc/``.
+Output HTML and PDF files are placed in the directory ``doc``.
 
 Driver programs
 ---------------

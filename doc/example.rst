@@ -4,7 +4,7 @@ Examples
 We give some further examples on using hypoct in this section. Some of these can also be considered tests. Insert into the preamble of each code snippet the following::
 
   import hypoct, numpy as np
-  from TreeVisualizer import TreeVisualizer
+  from hypoct.tools import TreeVisualizer
 
 Degenerate distributions
 ------------------------
@@ -96,7 +96,7 @@ The following code demonstrates how to build a tree on triangles that is suitabl
 Changing plot styles for TreeVisualizer
 ----------------------------------------
 
-Plot styles for :meth:`TreeVisualizer.TreeVisualizer.draw_interactive` can be changed by specifying :mod:`matplotlib`-type keywords. For example, using::
+Plot styles for :meth:`hypoct.tools.TreeVisualizer.draw_interactive` can be changed by specifying :mod:`matplotlib`-type keywords. For example, using::
 
   view = TreeVisualizer(tree)
   view.draw_interactive(node_alpha=0.2, point_c='g', nbor_color='y', ilst_color='r')
