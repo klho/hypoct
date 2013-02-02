@@ -29,7 +29,7 @@ if __name__ == '__main__':
   # initialize points
   n = 2**20
   theta = np.linspace(0, 2*np.pi, n+1)[:n]
-  x = np.array([np.cos(theta), np.sin(theta)])
+  x = np.array([np.cos(theta), np.sin(theta)], order='F')
 
   # print input summary
   print "Number of points:                           %8i" % n

@@ -40,7 +40,7 @@ class Tree:
   :type intr: {`'p'`, `'c'`, `'g'`}
 
   :keyword siz:
-    Sizes associated with each point. If `siz` is a single number, then it is
+    Sizes associated with each point. If `siz` is a single float, then it is
     automatically expanded into an appropriately sized constant array. Ignored
     if `intr = 'p'`.
   :type siz: :class:`numpy.ndarray`
@@ -51,7 +51,7 @@ class Tree:
 
   :keyword ext:
     Extent of root node. If `ext[i] <= 0`, then the extent in dimension `i` is
-    calculated from the data. If `ext` is a single number, then it is
+    calculated from the data. If `ext` is a single float, then it is
     automatically expanded into an appropriately sized constant array.
   :type ext: :class:`numpy.ndarray`
   """
@@ -61,12 +61,12 @@ class Tree:
     Initialize.
     """
     # process inputs
-    self.x = np.asfortranarray(  x, dtype='float64')
-    siz    = np.asfortranarray(siz, dtype='float64')
-    ext    = np.asfortranarray(ext, dtype='float64')
+    self.x = np.array(  x, copy=False, dtype='float64', order='F')
+    siz    = np.array(siz, copy=False, dtype='float64')
+    ext    = np.array(ext, copy=False, dtype='float64')
     d, n = self.x.shape
-    if (siz.size == 1): siz = siz * np.ones(n, order='F')
-    if (ext.size == 1): ext = ext * np.ones(d, order='F')
+    if (siz.size == 1): siz = siz * np.ones(n)
+    if (ext.size == 1): ext = ext * np.ones(d)
 
     # call Fortran routine
     self.rootx, self.xi = _hypoct.hypoct_python_buildx(adap, intr, self.x, siz,
@@ -95,7 +95,7 @@ class Tree:
     """
     # call Fortran routine
     _hypoct.hypoct_python_chld(self.lvlx, self.nodex)
-    self.chldp = np.array(_hypoct.chldp, order='F')
+    self.chldp = np.array(_hypoct.chldp)
     _hypoct.chldp = None
 
     # set flags
@@ -132,14 +132,14 @@ class Tree:
     if not self._flags['chld']: self.generate_child_data()
 
     # process `per` input
-    per = np.asfortranarray(per, dtype='int32')
+    per = np.array(per, copy=False, dtype='int32')
     if (per.size == 1):
-      per = per * np.ones(self.x.shape[0], dtype='int32', order='F')
+      per = per * np.ones(self.x.shape[0], dtype='int32')
 
     # call Fortran routine
     _hypoct.hypoct_python_nborx(self.lvlx, self.nodex, self.chldp, per)
-    self.nborp = np.array(_hypoct.nborp, order='F')
-    self.nbori = np.array(_hypoct.nbori, order='F')
+    self.nborp = np.array(_hypoct.nborp)
+    self.nbori = np.array(_hypoct.nbori)
     _hypoct.nborp = None
     if _hypoct.nbori.size > 0: _hypoct.nbori = None
 
@@ -165,8 +165,8 @@ class Tree:
     # call Fortran routine
     _hypoct.hypoct_python_ilst(self.lvlx, self.nodex, self.chldp,
                                      self.nborp, self.nbori)
-    self.ilstp = np.array(_hypoct.ilstp, order='F')
-    self.ilsti = np.array(_hypoct.ilsti, order='F')
+    self.ilstp = np.array(_hypoct.ilstp)
+    self.ilsti = np.array(_hypoct.ilsti)
     _hypoct.ilstp = None
     if _hypoct.ilsti.size > 0: _hypoct.ilsti = None
 

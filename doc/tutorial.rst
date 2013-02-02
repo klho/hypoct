@@ -29,7 +29,9 @@ Now let's generate some data. As an example, we consider points distributed unif
 >>> import numpy as np
 >>> n = 100
 >>> theta = np.linspace(0, 2*np.pi, n+1)[:n]
->>> x = np.array([np.cos(theta), np.sin(theta)])
+>>> x = np.array([np.cos(theta), np.sin(theta)], order='F')
+
+Note the use of the flag ``order='F'`` in :func:`numpy.array`. This instantiates the array in Fortran-contiguous order and is important for avoiding data copying when passing in multidimensional arrays.
 
 Building the tree
 -----------------
@@ -152,7 +154,7 @@ A complete program for building a tree and generating all auxiliary data is give
   # initialize points
   n = 100
   theta = np.linspace(0, 2*np.pi, n+1)[:n]
-  x = np.array([np.cos(theta), np.sin(theta)])
+  x = np.array([np.cos(theta), np.sin(theta)], order='F')
 
   # build tree
   tree = hypoct.Tree(x, occ=5)
