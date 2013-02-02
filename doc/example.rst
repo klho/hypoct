@@ -68,7 +68,7 @@ Periodic data
 To construct a triply periodic tree with unit cell extents of, say, 10, 2, and 2, respectively, in the first, second, and third dimensions, write, e.g.::
 
   x = np.random.rand(3, 100)
-  tree = hypoct.Tree(x, ext=[10., 2., 2.])
+  tree = hypoct.Tree(x, ext=[10, 2, 2])
   tree.find_neighbors(per=True)
   tree.get_interaction_lists()
 

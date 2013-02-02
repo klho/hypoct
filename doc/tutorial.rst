@@ -82,18 +82,9 @@ Root extent
 
 The extent of the root node can be specified using the ``ext`` keyword, e.g.,
 
->>> tree = hypoct.Tree(x, ext=[10., 0.])
+>>> tree = hypoct.Tree(x, ext=[10, 0])
 
-This tells the code to set the length of the root along the first dimension to 10; its length along the second dimension is calculated from the data (the corresponding entry is nonpositive). This is often useful if there is some external parameter governing the problem geometry, for example, periodicity conditions.
-
-.. note::
-   Observe the forced typecasting to floats in the above; if we had written::
-
-   >>> tree = hypoct.Tree(x, ext=[10, 0])
-
-   instead, then we would have received an F2PY warning indicating that the array ``ext`` had been copied before being passed to the Fortran backend. This is because the Fortran routine expects input as double-precision floats; since ``ext`` is, in this case, an array of integers, it has to be copied first into the proper format.
-
-Like ``siz``, ``ext`` can also be given a single float, in which case it is automatically expanded as appropriate. The default is ``ext=0``.
+This tells the code to set the length of the root along the first dimension to 10; its length along the second dimension is calculated from the data (the corresponding entry is nonpositive). This is often useful if there is some external parameter governing the problem geometry, for example, periodicity conditions. Like ``siz``, ``ext`` can also be given as a single number, in which case it is automatically expanded as appropriate. The default is ``ext=0``.
 
 Remarks
 .......
@@ -134,14 +125,7 @@ which creates the neighbor pointer and index arrays ``tree.nborp`` and ``tree.nb
 
 >>> tree.find_neighbors(per=[True, False])
 
-.. note::
-   This issues an array copy warning since Fortran stores logical values as integers. Therefore, to avoid copying, we can use instead::
-
-   >>> tree.find_neighbors(per=np.array([True, False], dtype='int32'))
-
-It is worth emphasizing that the size of the unit cell cannot be directly controlled here; for this, use the ``ext`` keyword in :meth:`hypoct.Tree`.
-
-As with the ``siz`` and ``ext`` keywords for :meth:`hypoct.Tree`, we can also use shorthand by writing just, e.g.::
+It is worth emphasizing that the size of the unit cell cannot be directly controlled here; for this, use the ``ext`` keyword in :meth:`hypoct.Tree`. As with the ``siz`` and ``ext`` keywords for :meth:`hypoct.Tree`, we can also use shorthand by writing just, e.g.::
 
 >>> tree.find_neighbors(per=True)
 

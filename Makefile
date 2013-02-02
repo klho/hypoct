@@ -4,7 +4,7 @@ FFLAGS    = -fPIC -Wall -O3
 CC        = gcc
 CFLAGS    = -fPIC -Wall -O3
 F2PY      = f2py
-F2PYFLAGS = --fcompiler=gnu95 -DF2PY_REPORT_ON_ARRAY_COPY
+F2PYFLAGS = --fcompiler=gnu95
 PYTHON    = python
 
 SRC      = src

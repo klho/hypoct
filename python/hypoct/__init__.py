@@ -40,7 +40,7 @@ class Tree:
   :type intr: {`'p'`, `'c'`, `'g'`}
 
   :keyword siz:
-    Sizes associated with each point. If `siz` is a single float, then it is
+    Sizes associated with each point. If `siz` is a single number, then it is
     automatically expanded into an appropriately sized constant array. Ignored
     if `intr = 'p'`.
   :type siz: :class:`numpy.ndarray`
@@ -51,7 +51,7 @@ class Tree:
 
   :keyword ext:
     Extent of root node. If `ext[i] <= 0`, then the extent in dimension `i` is
-    calculated from the data. If `ext` is a single float, then it is
+    calculated from the data. If `ext` is a single number, then it is
     automatically expanded into an appropriately sized constant array.
   :type ext: :class:`numpy.ndarray`
   """
@@ -61,9 +61,9 @@ class Tree:
     Initialize.
     """
     # process inputs
-    self.x = np.asfortranarray(  x)
-    siz    = np.asfortranarray(siz)
-    ext    = np.asfortranarray(ext)
+    self.x = np.asfortranarray(  x, dtype='float64')
+    siz    = np.asfortranarray(siz, dtype='float64')
+    ext    = np.asfortranarray(ext, dtype='float64')
     d, n = self.x.shape
     if (siz.size == 1): siz = siz * np.ones(n, order='F')
     if (ext.size == 1): ext = ext * np.ones(d, order='F')
@@ -127,17 +127,12 @@ class Tree:
       `per[i] = True`. Use `ext` in :meth:`Tree` to control the extent of
       the root.
     :type per: :class:`numpy.ndarray`
-
-    .. note::
-       In Fortran, `per` is stored as an array of logicals, which in C is
-       equivalent to an array of integers. To avoid array copies, typecast `per`
-       as `dtype='int32'`.
     """
     # generate child data if non-existent
     if not self._flags['chld']: self.generate_child_data()
 
     # process `per` input
-    per = np.asfortranarray(per)
+    per = np.asfortranarray(per, dtype='int32')
     if (per.size == 1):
       per = per * np.ones(self.x.shape[0], dtype='int32', order='F')
 
