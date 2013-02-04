@@ -6,7 +6,7 @@ We now present a tutorial on using the Python interface to hypoct. From here on,
 Overview
 --------
 
-The Python interface is located in the directory ``python``, which should contain directory ``hypoct``, organizing the main Python package, and ``hypoct_python.so``, the F2PY-ed Fortran library. The file ``hypoct_python.so`` contains all wrapped routines and is imported by :mod:`hypoct`, which creates a somewhat more convenient (but still pretty bare-bones) object-oriented interface around it. For details on the Python modules, please see the :doc:`api`; for details on data formats, please refer to the Fortran source code.
+The Python interface is located in the directory ``python``, which contains the directory ``hypoct``, organizing the main Python package, and ``hypoct_python.so``, the F2PY-ed Fortran library. The file ``hypoct_python.so`` contains all wrapped routines and is imported by :mod:`hypoct`, which creates a somewhat more convenient (but still pretty bare-bones) object-oriented interface around it. For details on the Python modules, please see the :doc:`api`; for details on data formats, please refer to the Fortran source code.
 
 We will now step through the process of running a program calling hypoct from Python, following the Python driver program as a guide.
 
@@ -31,7 +31,7 @@ Now let's generate some data. As an example, we consider points distributed unif
 >>> theta = np.linspace(0, 2*np.pi, n+1)[:n]
 >>> x = np.array([np.cos(theta), np.sin(theta)], order='F')
 
-Note the use of the flag ``order='F'`` in :func:`numpy.array`. This instantiates the array in Fortran-contiguous order and is important for avoiding data copying when passing in multidimensional arrays.
+Note the use of the flag ``order='F'`` in :func:`numpy.array`. This instantiates the array in Fortran-contiguous order and is important for avoiding data copying when passing to the backend.
 
 Building the tree
 -----------------
