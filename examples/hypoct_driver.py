@@ -35,18 +35,20 @@ if __name__ == '__main__':
   print "Number of points:                           %8i" % n
   print "----------------------------------------------------"
 
+  # set print format
+  fmt = "%10.4e (s) / %6.2f (MB)"
+
   # build tree
-  print "Building tree...           ",
+  print "Building tree...            ",
   t0 = time.clock()
   tree = hypoct.Tree(x, occ=20)
   t = time.clock() - t0
   mb = 1e-6*(tree.lvlx.nbytes + tree.rootx.nbytes + tree.xi.nbytes +
              tree.nodex.nbytes)
-  fmt = "%12.4e (s) / %5.2f (MB)"
   print fmt % (t, mb)
 
   # generate child data
-  print "Generating child data...   ",
+  print "Generating child data...    ",
   t0 = time.clock()
   tree.generate_child_data()
   t = time.clock() - t0
@@ -54,7 +56,7 @@ if __name__ == '__main__':
   print fmt % (t, mb)
 
   # generate geometry data
-  print "Generating geometry data...",
+  print "Generating geometry data... ",
   t0 = time.clock()
   tree.generate_geometry_data()
   t = time.clock() - t0
@@ -62,7 +64,7 @@ if __name__ == '__main__':
   print fmt % (t, mb)
 
   # find neighbors
-  print "Finding neighbors...       ",
+  print "Finding neighbors...        ",
   t0 = time.clock()
   tree.find_neighbors()
   t = time.clock() - t0
@@ -70,9 +72,9 @@ if __name__ == '__main__':
   print fmt % (t, mb)
 
   # get interaction list
-  print "Getting interaction list...",
+  print "Getting interaction lists...",
   t0 = time.clock()
-  tree.get_interaction_list()
+  tree.get_interaction_lists()
   t = time.clock() - t0
   mb = 1e-6*(tree.ilstp.nbytes + tree.ilsti.nbytes)
   print fmt % (t, mb)

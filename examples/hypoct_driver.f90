@@ -69,7 +69,7 @@
              ' ----------------------------------------------------')
 
 !     build tree
-      print '(xa,$)', 'Building tree...            '
+      print '(xa,$)', 'Building tree...             '
       call cpu_time(t0)
       call hypoct_buildx(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
                          lvlx, rootx, xi, nodex)
@@ -77,10 +77,10 @@
       mb = i2mb*(size(lvlx) + size(xi) + size(nodex)) + d2mb*size(rootx)
       print 20, t - t0, mb
 
-20    format(e11.4, ' (s) / ', f6.2, ' (MB)')
+20    format(e10.4, ' (s) / ', f6.2, ' (MB)')
 
 !     generate child data
-      print '(xa,$)', 'Generating child data...    '
+      print '(xa,$)', 'Generating child data...     '
       call cpu_time(t0)
       call hypoct_chld(lvlx, nodex, chldp)
       call cpu_time(t)
@@ -88,7 +88,7 @@
       print 20, t - t0, mb
 
 !     generate geometry data
-      print '(xa,$)', 'Generating geometry data... '
+      print '(xa,$)', 'Generating geometry data...  '
       call cpu_time(t0)
       call hypoct_geom(d, lvlx, rootx, nodex, l, ctr)
       call cpu_time(t)
@@ -96,7 +96,7 @@
       print 20, t - t0, mb
 
 !     find neighbors
-      print '(xa,$)', 'Finding neighbors...        '
+      print '(xa,$)', 'Finding neighbors...         '
       allocate(per(d))
       per = .false.
       call cpu_time(t0)
@@ -106,7 +106,7 @@
       print 20, t - t0, mb
 
 !     get interaction list
-      print '(xa,$)', 'Getting interaction list... '
+      print '(xa,$)', 'Getting interaction lists... '
       call cpu_time(t0)
       call hypoct_ilst(lvlx, nodex, chldp, nborp, nbori, ilstp, ilsti)
       call cpu_time(t)

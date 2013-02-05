@@ -76,7 +76,6 @@
 !    This routine simplifies the user interface by calling the expert routine
 !    with some common defaults. See HYPOCT_BUILDX for details.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -182,7 +181,6 @@
 !      node child ID is an integer bitstring denoting the dimensions for which
 !      the node is on the positive side of its parent's center.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -199,7 +197,7 @@
       character(len=*), parameter :: srname = 'HYPOCT_BUILDX'
       integer :: mlvl, nlvl, mnode, nnode, nnode_, mleaf, nleaf, lvldiv, i
       integer, allocatable :: leaf(:)
-      real*8, parameter :: divrat = 1 / sqrt(2d0)
+      real*8, parameter :: divrat = 1 / sqrt(2d0), half = 0.5
       real*8 :: xrng(2), l(d), lrng(2)
       real*8, allocatable :: ctr(:,:)
       logical :: malloc
@@ -236,8 +234,8 @@
         else
           xrng(2) = maxval(x(i,:))
         endif
-        rootx(1,i) = 0.5*(xrng(1) + xrng(2))
-        rootx(2,i) =      xrng(2) - xrng(1)
+        rootx(1,i) = half*(xrng(1) + xrng(2))
+        rootx(2,i) =       xrng(2) - xrng(1)
       enddo
       nodex(1,1:2) = (/ 0, n /)
       nodex(2,1) =  0
@@ -274,7 +272,7 @@
         do i = 1, d
           if (l(i) > divrat*lrng(2)) then
             lvldiv = ibset(lvldiv, i-1)
-            l(i) = 0.5*l(i)
+            l(i) = half*l(i)
           endif
         enddo
         lrng = (/ minval(l), maxval(l) /)
@@ -352,7 +350,6 @@
 !      is the total number of nodes. The children of node I have ordered indices
 !      CHLDP(I)+1:CHLDP(I+1).
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -413,7 +410,6 @@
 !      Node centers. On exit, CTR has dimension (D,NNODE), where NNODE is the
 !      total number of nodes.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -425,6 +421,7 @@
 
 !     local variables
       integer :: nlvl, nnode, i, j, k
+      real*8, parameter :: half = 0.5
       logical :: div(d)
 !     ==========================================================================
 
@@ -441,7 +438,7 @@
         do j = 1, d
           if (ibits(lvlx(2,i+1), j-1, 1) == 1) then
             div(j) = .true.
-            l(j,i) = 0.5*l(j,i)
+            l(j,i) = half*l(j,i)
           endif
         enddo
         do j = lvlx(1,i)+1, lvlx(1,i+1)
@@ -449,9 +446,9 @@
           do k = 1, d
             if (div(k)) then
               if (ibits(nodex(3,j), k-1, 1) == 0) then
-                ctr(k,j) = ctr(k,j) - 0.5*l(k,i)
+                ctr(k,j) = ctr(k,j) - half*l(k,i)
               else
-                ctr(k,j) = ctr(k,j) + 0.5*l(k,i)
+                ctr(k,j) = ctr(k,j) + half*l(k,i)
               endif
             endif
           enddo
@@ -494,7 +491,6 @@
 !      The nodes in the interation list of node I have ordered indices
 !      ILSTI(ILSTP(I)+1:ILSTP(I+1)).
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -572,7 +568,6 @@
 !    This routine simplifies the user interface by calling the expert routine
 !    with some common defaults. See HYPOCT_NBORX for details.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -629,7 +624,6 @@
 !      Neighbor indices. On exit, NBORI has dimension NBORP(NNODE+1). The
 !      neighbors of node I have ordered indices NBORI(NBORP(I)+1:NBORP(I+1)).
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -748,7 +742,6 @@
 !*******************************************************************************
 !    Determine if a point is too big for the next level based on its size.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -784,7 +777,6 @@
 !*******************************************************************************
 !    Compute child ID of child node containing a given point in its parent.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -812,7 +804,6 @@
 !*******************************************************************************
 !    Find neighbors among children of a given node.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -873,7 +864,6 @@
 !*******************************************************************************
 !    Print error message and terminate.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -894,7 +884,6 @@
 !*******************************************************************************
 !    Print illegal input error message and terminate.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -915,7 +904,6 @@
 !    if the node to which it is assigned will not be further subdivided or it is
 !    too big for the next level.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -978,7 +966,6 @@
 !*******************************************************************************
 !    Resize and copy 1D integer allocatable arrays.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -1017,7 +1004,6 @@
 !*******************************************************************************
 !    Resize and copy 1D logical allocatable arrays.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -1056,7 +1042,6 @@
 !*******************************************************************************
 !    Resize and copy 2D real allocatable arrays.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -1097,7 +1082,6 @@
 !*******************************************************************************
 !    Resize and copy 2D integer allocatable arrays.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -1139,7 +1123,6 @@
 !*******************************************************************************
 !    Subdivide leaves and sort.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -1213,7 +1196,6 @@
 !*******************************************************************************
 !    Update leaf data.
 !*******************************************************************************
-      implicit none
 
 !     ==========================================================================
 !     variable declarations
@@ -1226,6 +1208,7 @@
 
 !     local variables
       integer :: id, i, j
+      real*8, parameter :: half = 0.5
       real*8 :: ctr_(d,n)
 !     ==========================================================================
 
@@ -1242,9 +1225,9 @@
         do j = 1, d
           if (ibits(lvldiv, j-1, 1) == 1) then
             if (ibits(id, j-1, 1) == 0) then
-              ctr(j,i) = ctr(j,i) - 0.5*l(j)
+              ctr(j,i) = ctr(j,i) - half*l(j)
             else
-              ctr(j,i) = ctr(j,i) + 0.5*l(j)
+              ctr(j,i) = ctr(j,i) + half*l(j)
             endif
           endif
         enddo

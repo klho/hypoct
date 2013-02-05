@@ -25,7 +25,7 @@
 int main() {
 
   // local variables
-  char *fmt = "%11.4e (s) / %6.2f (MB)\n";
+  char *fmt = "%10.4e (s) / %6.2f (MB)\n";
   int i;
   double pi = 4*atan(1), theta, mb;
   clock_t t, t0;
@@ -50,7 +50,7 @@ n
 );
 
   // build tree
-  printf("Building tree...            ");
+  printf("Building tree...             ");
   char adap = 'a', intr = 'p';
   int occ = 20, lvlmax = -1, nlvl, nnode, *lvlx,
       *xi = (int *) malloc(n*sizeof(int)), *nodex;
@@ -64,7 +64,7 @@ n
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
   // generate child data
-  printf("Generating child data...    ");
+  printf("Generating child data...     ");
   int *chldp;
   t0 = clock();
   hypoct_chld(&nlvl, &nnode, &lvlx, &nodex, &chldp);
@@ -73,7 +73,7 @@ n
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
   // generate geometry data
-  printf("Generating geometry data... ");
+  printf("Generating geometry data...  ");
   double *l, *ctr;
   t0 = clock();
   hypoct_geom(&d, &nlvl, &nnode, &lvlx, *rootx, &nodex, &l, &ctr);
@@ -82,7 +82,7 @@ n
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
   // find neighbors
-  printf("Finding neighbors...        ");
+  printf("Finding neighbors...         ");
   int per[d], nnbor, *nborp, *nbori;
   for (i = 0; i < d; i++) { per[i] = 0; }
   t0 = clock();
@@ -93,7 +93,7 @@ n
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
   // get interaction list
-  printf("Getting interaction lists...");
+  printf("Getting interaction lists... ");
   int nilst, *ilstp, *ilsti;
   t0 = clock();
   hypoct_ilst(&nlvl, &nnode, &lvlx, &nodex, &chldp, &nnbor, &nborp, &nbori,
