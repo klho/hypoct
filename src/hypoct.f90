@@ -197,7 +197,7 @@
       character(len=*), parameter :: srname = 'HYPOCT_BUILDX'
       integer :: mlvl, nlvl, mnode, nnode, nnode_, mleaf, nleaf, lvldiv, i
       integer, allocatable :: leaf(:)
-      real*8, parameter :: divrat = 1 / sqrt(2d0), half = 0.5
+      real*8, parameter :: half = 0.5, two = 2, divrat = 1 / sqrt(two)
       real*8 :: xrng(2), l(d), lrng(2)
       real*8, allocatable :: ctr(:,:)
       logical :: malloc
