@@ -27,24 +27,16 @@
  */
 
 /*
- * Build hyperoctree (see HYPOCT_BUILDX).
- */
-extern void hypoct_build(
-  int *d, int *n, double x[], int *occ, int *nlvl, int *nnode, int **lvlx,
-  double rootx[], int xi[], int **nodex
-);
-
-/*
- * Build hyperoctree (expert).
+ * Build hyperoctree.
  *
  * Additional arguments:
  *   NLVL  - tree depth      (output)
  *   NNODE - number of nodes (output)
  */
-extern void hypoct_buildx(
+extern void hypoct_build(
   char *adap, char *intr, int *d, int *n, double x[], double siz[], int *occ,
   int *lvlmax, double ext[], int *nlvl, int *nnode, int **lvlx, double rootx[],
-  int xi[], int **nodex
+  int xi[], int **xp, int **nodex
 );
 
 /*
@@ -71,7 +63,7 @@ extern void hypoct_geom(
 );
 
 /*
- * Get interaction list.
+ * Get interaction lists.
  *
  * Additional arguments:
  *   NLVL  - tree depth                                 ( input)
@@ -85,22 +77,14 @@ extern void hypoct_ilst(
 );
 
 /*
- * Find neighbors (see HYPOCT_NBORX).
- */
-extern void hypoct_nbor(
-  int *d, int *nlvl, int *nnode, int **lvlx, int **nodex, int *nnbor,
-  int **nborp, int **nbori
-);
-
-/*
- * Find neighbors (expert).
+ * Find neighbors.
  *
  * Additional arguments:
  *   NLVL  - tree depth                ( input)
  *   NNODE - number of nodes           ( input)
  *   NNBOR - total number of neighbors (output)
  */
-extern void hypoct_nborx(
+extern void hypoct_nbor(
   int *d, int *nlvl, int *nnode, int **lvlx, int **nodex, int **chldp,
   int per[], int *nnbor, int **nborp, int **nbori
 );

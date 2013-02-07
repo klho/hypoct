@@ -69,11 +69,13 @@ class Tree:
     if (ext.size == 1): ext = ext * np.ones(d)
 
     # call Fortran routine
-    self.rootx, self.xi = _hypoct.hypoct_python_buildx(adap, intr, self.x, siz,
-                                                       occ, lvlmax, ext)
+    self.rootx, self.xi = _hypoct.hypoct_python_build(adap, intr, self.x, siz,
+                                                      occ, lvlmax, ext)
     self.lvlx  = np.array(_hypoct.lvlx,  order='F')
+    self.xp    = np.array(_hypoct.xp,    order='F')
     self.nodex = np.array(_hypoct.nodex, order='F')
     _hypoct.lvlx  = None
+    _hypoct.xp    = None
     _hypoct.nodex = None
 
     # set properties
@@ -137,7 +139,7 @@ class Tree:
       per = per * np.ones(self.x.shape[0], dtype='int32')
 
     # call Fortran routine
-    _hypoct.hypoct_python_nborx(self.lvlx, self.nodex, self.chldp, per)
+    _hypoct.hypoct_python_nbor(self.lvlx, self.nodex, self.chldp, per)
     self.nborp = np.array(_hypoct.nborp)
     self.nbori = np.array(_hypoct.nbori)
     _hypoct.nborp = None

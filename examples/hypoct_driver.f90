@@ -29,7 +29,7 @@
 !     build variables
       character :: adap = 'a', intr = 'p'
       integer :: d = 2, n = 2**20, occ = 20, lvlmax = -1
-      integer, allocatable :: lvlx(:,:), xi(:), nodex(:,:)
+      integer, allocatable :: lvlx(:,:), xi(:), xp(:), nodex(:,:)
       real*8, allocatable :: x(:,:), siz(:), ext(:), rootx(:,:)
 
 !     geometry variables
@@ -48,7 +48,7 @@
 !     local variables
       integer :: nlvl, nnode, i
       real*4 :: t, t0
-      real*8, parameter :: pi = 4*atan(1d0), i2mb = 4d-6, d2mb = 8d-6
+      real*8, parameter :: pi = 4d0*atan(1d0), i2mb = 4d-6, d2mb = 8d-6
       real*8 :: theta, mb
 !     ==========================================================================
 
@@ -71,10 +71,11 @@
 !     build tree
       print '(xa,$)', 'Building tree...             '
       call cpu_time(t0)
-      call hypoct_buildx(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
-                         lvlx, rootx, xi, nodex)
+      call hypoct_build(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
+                        lvlx, rootx, xi, xp, nodex)
       call cpu_time(t)
-      mb = i2mb*(size(lvlx) + size(xi) + size(nodex)) + d2mb*size(rootx)
+      mb = i2mb*(size(lvlx) + size(xi) + size(xp) + size(nodex)) &
+         + d2mb*size(rootx)
       print 20, t - t0, mb
 
 20    format(e10.4, ' (s) / ', f6.2, ' (MB)')
@@ -100,7 +101,7 @@
       allocate(per(d))
       per = .false.
       call cpu_time(t0)
-      call hypoct_nborx(d, lvlx, nodex, chldp, per, nborp, nbori)
+      call hypoct_nbor(d, lvlx, nodex, chldp, per, nborp, nbori)
       call cpu_time(t)
       mb = i2mb*(size(nborp) + size(nbori))
       print 20, t - t0, mb

@@ -30,44 +30,11 @@
     contains
 
 !*******************************************************************************
-     subroutine hypoct_c_build(d, n, x, occ, nlvl, nnode, lvlx, rootx, xi, &
-                               nodex) &
+     subroutine hypoct_c_build(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
+                               nlvl, nnode, lvlx, rootx, xi, xp, nodex) &
                 bind(C, name='hypoct_build')
 !*******************************************************************************
 !    C wrapper for HYPOCT_BUILD.
-!*******************************************************************************
-
-!     ==========================================================================
-!     variable declarations
-!     --------------------------------------------------------------------------
-!     arguments
-      integer(c_int), intent(in) :: d, n, occ
-      real(c_double), intent(in) :: x(d,n)
-      integer(c_int), intent(out) :: xi(n), nlvl, nnode
-      real(c_double), intent(out) :: rootx(2,d)
-      type(c_ptr), intent(out) :: lvlx, nodex
-
-!     local variables
-      integer, allocatable, target, save :: lvlx_(:,:), nodex_(:,:)
-!     ==========================================================================
-
-!     call Fortran routine
-      call hypoct_build(d, n, x, occ, lvlx_, rootx, xi, nodex_)
-
-!     set outputs
-      nlvl  = lvlx_(2,0)
-      nnode = lvlx_(1,nlvl+1)
-      lvlx  = c_loc(lvlx_)
-      nodex = c_loc(nodex_)
-
-     end subroutine
-
-!*******************************************************************************
-     subroutine hypoct_c_buildx(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
-                                nlvl, nnode, lvlx, rootx, xi, nodex) &
-                bind(C, name='hypoct_buildx')
-!*******************************************************************************
-!    C wrapper for HYPOCT_BUILDX.
 !*******************************************************************************
 
 !     ==========================================================================
@@ -79,20 +46,21 @@
       real(c_double), intent(in) :: x(d,n), siz(n), ext(d)
       integer(c_int), intent(out) :: xi(n), nlvl, nnode
       real(c_double), intent(out) :: rootx(2,d)
-      type(c_ptr), intent(out) :: lvlx, nodex
+      type(c_ptr), intent(out) :: lvlx, xp, nodex
 
 !     local variables
-      integer, allocatable, target, save :: lvlx_(:,:), nodex_(:,:)
+      integer, allocatable, target, save :: lvlx_(:,:), xp_(:), nodex_(:,:)
 !     ==========================================================================
 
 !     call Fortran routine
-      call hypoct_buildx(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
-                         lvlx_, rootx, xi, nodex_)
+      call hypoct_build(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
+                        lvlx_, rootx, xi, xp_, nodex_)
 
 !     set outputs
       nlvl  = lvlx_(2,0)
       nnode = lvlx_(1,nlvl+1)
       lvlx  = c_loc(lvlx_)
+      xp    = c_loc(xp_)
       nodex = c_loc(nodex_)
 
      end subroutine
@@ -119,7 +87,7 @@
 
 !     set inputs
       call c_f_pointer(lvlx,  lvlx_,  [2, nlvl+2])
-      call c_f_pointer(nodex, nodex_, [3, nnode+1])
+      call c_f_pointer(nodex, nodex_, [2, nnode])
 
 !     call Fortran routine
       call hypoct_chld(lvlx_, nodex_, chldp_)
@@ -152,7 +120,7 @@
 
 !     set inputs
       call c_f_pointer(lvlx,  lvlx_,  [2, nlvl+2])
-      call c_f_pointer(nodex, nodex_, [3, nnode+1])
+      call c_f_pointer(nodex, nodex_, [2, nnode])
 
 !     call Fortran routine
       call hypoct_geom(d, lvlx_, rootx, nodex_, l_, ctr_)
@@ -188,7 +156,7 @@
 
 !     set inputs
       call c_f_pointer(lvlx,  lvlx_,  [2, nlvl+2])
-      call c_f_pointer(nodex, nodex_, [3, nnode+1])
+      call c_f_pointer(nodex, nodex_, [2, nnode])
       call c_f_pointer(chldp, chldp_, [nnode+1])
       call c_f_pointer(nborp, nborp_, [nnode+1])
       call c_f_pointer(nbori, nbori_, [nnbor])
@@ -204,47 +172,11 @@
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_c_nbor(d, nlvl, nnode, lvlx, nodex, &
+     subroutine hypoct_c_nbor(d, nlvl, nnode, lvlx, nodex, chldp, per, &
                               nnbor, nborp, nbori) &
                 bind(C, name="hypoct_nbor")
 !*******************************************************************************
 !    C wrapper for HYPOCT_NBOR.
-!*******************************************************************************
-
-!     ==========================================================================
-!     variable declarations
-!     --------------------------------------------------------------------------
-!     arguments
-      integer(c_int), intent(in) :: d, nlvl, nnode
-      type(c_ptr), intent(in) :: lvlx, nodex
-      integer(c_int), intent(out) :: nnbor
-      type(c_ptr), intent(out) :: nborp, nbori
-
-!     local variables
-      integer, pointer :: lvlx_(:,:), nodex_(:,:)
-      integer, allocatable, target, save :: nborp_(:), nbori_(:)
-!     ==========================================================================
-
-!     set inputs
-      call c_f_pointer(lvlx,  lvlx_,  [2, nlvl+2])
-      call c_f_pointer(nodex, nodex_, [3, nnode+1])
-
-!     call Fortran routine
-      call hypoct_nbor(d, lvlx_, nodex_, nborp_, nbori_)
-
-!     set outputs
-      nnbor = nborp_(nnode+1)
-      nborp = c_loc(nborp_)
-      nbori = c_loc(nbori_)
-
-     end subroutine
-
-!*******************************************************************************
-     subroutine hypoct_c_nborx(d, nlvl, nnode, lvlx, nodex, chldp, per, &
-                               nnbor, nborp, nbori) &
-                bind(C, name="hypoct_nborx")
-!*******************************************************************************
-!    C wrapper for HYPOCT_NBORX.
 !*******************************************************************************
 
 !     ==========================================================================
@@ -264,12 +196,12 @@
 
 !     set inputs
       call c_f_pointer(lvlx,  lvlx_,  [2, nlvl+2])
-      call c_f_pointer(nodex, nodex_, [3, nnode+1])
+      call c_f_pointer(nodex, nodex_, [2, nnode])
       call c_f_pointer(chldp, chldp_, [nnode+1])
       per_ = (per /= 0)
 
 !     call Fortran routine
-      call hypoct_nborx(d, lvlx_, nodex_, chldp_, per_, nborp_, nbori_)
+      call hypoct_nbor(d, lvlx_, nodex_, chldp_, per_, nborp_, nbori_)
 
 !     set outputs
       nnbor = nborp_(nnode+1)

@@ -4,7 +4,6 @@ Examples
 We give some further examples on using hypoct in this section. Some of these can also be considered tests. Insert into the preamble of each code snippet the following::
 
   import hypoct, numpy as np
-  from hypoct.tools import TreeVisualizer
 
 Degenerate distributions
 ------------------------
@@ -29,7 +28,7 @@ Note the string of twos in ``tree.lvlx[1,:]``, which indicates that subdivision 
 High-dimensional data
 ---------------------
 
-Another good test is on high-dimensional data. Here, we try :math:`d = 30`, for which :math:`2^{d} \sim 10^{9}`, near the maximum range of four-byte integer values::
+Another good test is on high-dimensional data. Here, we try :math:`d = 30`, for which :math:`2^{d} \sim 10^{9}`, near the upper limit of four-byte integer values::
 
   x = np.random.rand(30, 100)
   tree = hypoct.Tree(x)
@@ -98,6 +97,7 @@ Changing plot styles for TreeVisualizer
 
 Plot styles for :meth:`hypoct.tools.TreeVisualizer.draw_interactive` can be changed by specifying :mod:`matplotlib`-type keywords. For example, using::
 
+  from hypoct.tools import TreeVisualizer
   view = TreeVisualizer(tree)
   view.draw_interactive(node_alpha=0.2, point_c='g', nbor_color='y', ilst_color='r')
 

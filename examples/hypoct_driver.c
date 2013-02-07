@@ -53,13 +53,13 @@ n
   printf("Building tree...             ");
   char adap = 'a', intr = 'p';
   int occ = 20, lvlmax = -1, nlvl, nnode, *lvlx,
-      *xi = (int *) malloc(n*sizeof(int)), *nodex;
+      *xi = (int *) malloc(n*sizeof(int)), *xp, *nodex;
   double rootx[d][2];
   t0 = clock();
-  hypoct_buildx(&adap, &intr, &d, &n, x, siz, &occ, &lvlmax, ext,
-                &nlvl, &nnode, &lvlx, *rootx, xi, &nodex);
+  hypoct_build(&adap, &intr, &d, &n, x, siz, &occ, &lvlmax, ext,
+               &nlvl, &nnode, &lvlx, *rootx, xi, &xp, &nodex);
   t = clock();
-  mb = 1e-6*(sizeof(int)*(2*(nlvl + 2) + 3*(nnode+1) + n) +
+  mb = 1e-6*(sizeof(int)*(2*(nlvl + 2) + n + 3*nnode + 1) +
              sizeof(double)*(2*d));
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
@@ -86,13 +86,13 @@ n
   int per[d], nnbor, *nborp, *nbori;
   for (i = 0; i < d; i++) { per[i] = 0; }
   t0 = clock();
-  hypoct_nborx(&d, &nlvl, &nnode, &lvlx, &nodex, &chldp, per, &nnbor, &nborp,
-               &nbori);
+  hypoct_nbor(&d, &nlvl, &nnode, &lvlx, &nodex, &chldp, per,
+              &nnbor, &nborp, &nbori);
   t = clock();
   mb = 1e-6*sizeof(int)*(nnode + 1 + nnbor);
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
-  // get interaction list
+  // get interaction lists
   printf("Getting interaction lists... ");
   int nilst, *ilstp, *ilsti;
   t0 = clock();

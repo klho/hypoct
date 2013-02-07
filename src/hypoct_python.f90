@@ -27,17 +27,18 @@
      implicit none
 
 !    allocatable arrays
-     integer, allocatable :: lvlx(:,:), nodex(:,:), chldp(:), &
-                             nborp(:), nbori(:), ilstp(:), ilsti(:)
+     integer, allocatable :: lvlx(:,:), xp(:), nodex(:,:), chldp(:), &
+                             nborp(:), nbori(:), ilstp(:), ilsti(:), &
+                             rxp(:), cxp(:)
      real*8, allocatable :: l(:,:), ctr(:,:)
 
     contains
 
 !*******************************************************************************
-     subroutine hypoct_python_buildx(adap, intr, d, n, x, siz, occ, lvlmax, &
-                                     ext, rootx, xi)
+     subroutine hypoct_python_build(adap, intr, d, n, x, siz, occ, lvlmax, &
+                                    ext, rootx, xi)
 !*******************************************************************************
-!    Python wrapper for HYPOCT_BUILDX.
+!    Python wrapper for HYPOCT_BUILD.
 !*******************************************************************************
 
 !     ==========================================================================
@@ -51,8 +52,8 @@
       real*8, intent(out) :: rootx(2,d)
 !     ==========================================================================
 
-      call hypoct_buildx(adap, intr, d, n, x, siz, occ, lvlmax, ext, lvlx, &
-                         rootx, xi, nodex)
+      call hypoct_build(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
+                        lvlx, rootx, xi, xp, nodex)
 
      end subroutine
 
@@ -66,7 +67,7 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: lvlx(2,0:*), nodex(3,*)
+      integer, intent(in) :: lvlx(2,0:*), nodex(2,*)
 !     ==========================================================================
 
       call hypoct_chld(lvlx, nodex, chldp)
@@ -83,7 +84,7 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: d, lvlx(2,0:*), nodex(3,*)
+      integer, intent(in) :: d, lvlx(2,0:*), nodex(2,*)
       real*8, intent(in) :: rootx(2,d)
 !     ==========================================================================
 
@@ -101,7 +102,7 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: lvlx(2,0:*), nodex(3,*), chldp(*), nborp(*), &
+      integer, intent(in) :: lvlx(2,0:*), nodex(2,*), chldp(*), nborp(*), &
                              nbori(*)
 !     ==========================================================================
 
@@ -110,20 +111,20 @@
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_python_nborx(d, lvlx, nodex, chldp, per)
+     subroutine hypoct_python_nbor(d, lvlx, nodex, chldp, per)
 !*******************************************************************************
-!    Python wrapper for HYPOCT_NBORX.
+!    Python wrapper for HYPOCT_NBOR.
 !*******************************************************************************
 
 !     ==========================================================================
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: d, lvlx(2,0:*), nodex(3,*), chldp(*)
+      integer, intent(in) :: d, lvlx(2,0:*), nodex(2,*), chldp(*)
       logical, intent(in) :: per(d)
 !     ==========================================================================
 
-      call hypoct_nborx(d, lvlx, nodex, chldp, per, nborp, nbori)
+      call hypoct_nbor(d, lvlx, nodex, chldp, per, nborp, nbori)
 
      end subroutine
 

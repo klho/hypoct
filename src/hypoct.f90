@@ -47,18 +47,16 @@
 !   - Support for periodic domains.
 !
 !   HYPOCT is written mainly in a Fortran 77 style for compatibility, with
-!   select Fortran 90 features for performance and accessibility.
+!   select modern Fortran features for performance and accessibility.
 !
 !   ----------------------------------------------------------------------------
 !   User-level routines
 !   ----------------------------------------------------------------------------
-!   hypoct_build  - build hyperoctree
-!   hypoct_buildx - build hyperoctree (expert)
-!   hypoct_chld   - generate child data
-!   hypoct_geom   - generate geometry data
-!   hypoct_ilst   - get interaction lists
-!   hypoct_nbor   - find neighbors
-!   hypoct_nborx  - find neighbors (expert)
+!   hypoct_build - build hyperoctree
+!   hypoct_chld  - generate child data
+!   hypoct_geom  - generate geometry data
+!   hypoct_ilst  - get interaction lists
+!   hypoct_nbor  - find neighbors
 !*******************************************************************************
      implicit none
 
@@ -69,48 +67,10 @@
 !===============================================================================
 
 !*******************************************************************************
-     subroutine hypoct_build(d, n, x, occ, lvlx, rootx, xi, nodex)
+     subroutine hypoct_build(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
+                             lvlx, rootx, xi, xp, nodex)
 !*******************************************************************************
 !    Build hyperoctree.
-!
-!    This routine simplifies the user interface by calling the expert routine
-!    with some common defaults. See HYPOCT_BUILDX for details.
-!*******************************************************************************
-
-!     ==========================================================================
-!     variable declarations
-!     --------------------------------------------------------------------------
-!     arguments
-      integer, intent(in) :: d, n, occ
-      real*8, intent(in) :: x(d,n)
-      integer, intent(out) :: xi(n)
-      integer, allocatable, intent(out) :: lvlx(:,:), nodex(:,:)
-      real*8, intent(out) :: rootx(2,d)
-
-!     local variables
-      character :: adap, intr
-      integer :: lvlmax
-      real*8 :: siz(n), ext(d)
-!     ==========================================================================
-
-!     set defaults
-      adap = 'a'
-      intr = 'p'
-      siz = 0
-      lvlmax = -1
-      ext = 0
-
-!     call main routine
-      call hypoct_buildx(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
-                         lvlx, rootx, xi, nodex)
-
-     end subroutine
-
-!*******************************************************************************
-     subroutine hypoct_buildx(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
-                              lvlx, rootx, xi, nodex)
-!*******************************************************************************
-!    Build hyperoctree (expert).
 !
 !    Arguments
 !    =========
@@ -125,8 +85,8 @@
 !        INTR = 'p': point-point
 !        INTR = 'c': point-element (collocation or qualocation)
 !        INTR = 'g': element-element (Galerkin)
-!      The interaction type controls how points are assigned to nodes. If INTR =
-!      'p', then SIZ is ignored.
+!      The interaction type controls how points are assigned to nodes. If
+!      INTR = 'p', then SIZ is ignored.
 !
 !    D : INTEGER, INTENT(IN)
 !      Dimension of space. Requires D > 0.
@@ -150,11 +110,12 @@
 !    EXT : REAL*8, DIMENSION(D), INTENT(IN)
 !      Extent of root node. If EXT(I) <= 0, then the extent in dimension I is
 !      calculated from the data. Its primary use is to force nodes to conform to
-!      a specified geometry (see HYPOCT_NBORX).
+!      a specified geometry (see HYPOCT_NBOR).
 !
 !    LVLX : INTEGER, ALLOCATABLE, DIMENSION(:,:), INTENT(OUT)
-!      Level data array. On exit, LVLX has dimension (2,0:NLVL+1), where NLVL =
-!      LVLX(2,0) is the tree depth, and contains the following information:
+!      Level data array. On exit, LVLX has dimension (2,0:NLVL+1), where
+!      NLVL = LVLX(2,0) is the tree depth, and contains the following
+!      information:
 !        LVLX(1,:)  - level pointer array
 !        LVLX(2,0)  - tree depth
 !        LVLX(2,1:) - level subdivision indices
@@ -170,16 +131,18 @@
 !    XI : INTEGER, DIMENSION(N), INTENT(OUT)
 !      Sorted point indices.
 !
+!    XP : INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)
+!      Node pointer array. On exit, XP has dimension NNODE + 1, where
+!      NNODE = LVLX(1,NLVL+1) is the total number of nodes. The points in node I
+!      have indices XI(XP(I)+1:XP(I+1)).
+!
 !    NODEX : INTEGER, ALLOCATABLE, DIMENSION(:,:), INTENT(OUT)
-!      Node data array. On exit, NODEX has dimension (3,NNODE+1), where NNODE =
-!      LVLX(1,NLVL+1) is the total number of nodes, and contains the following
-!      information:
-!        NODEX(1,:)      - node pointer array
-!        NODEX(2,:NNODE) - node parents
-!        NODEX(3,:NNODE) - node child IDs
-!      The points in node I have indices XI(NODEX(1,I)+1:NODEX(1,I+1)). Each
-!      node child ID is an integer bitstring denoting the dimensions for which
-!      the node is on the positive side of its parent's center.
+!      Node data array. On exit, NODEX has dimension (2,NNODE), where NNODE is
+!      the total number of nodes, and contains the following information:
+!        NODEX(1,:) - node parents
+!        NODEX(2,:) - node child IDs
+!      Each node child ID is an integer bitstring denoting the dimensions for
+!      which the node is on the positive side of its parent's center.
 !*******************************************************************************
 
 !     ==========================================================================
@@ -190,14 +153,14 @@
       integer, intent(in) :: d, n, occ, lvlmax
       real*8, intent(in) :: x(d,n), siz(n), ext(d)
       integer, intent(out) :: xi(n)
-      integer, allocatable, intent(out) :: lvlx(:,:), nodex(:,:)
+      integer, allocatable, intent(out) :: lvlx(:,:), xp(:), nodex(:,:)
       real*8, intent(out) :: rootx(2,d)
 
 !     local variables
-      character(len=*), parameter :: srname = 'HYPOCT_BUILDX'
+      character(len=*), parameter :: srname = 'HYPOCT_BUILD'
       integer :: mlvl, nlvl, mnode, nnode, nnode_, mleaf, nleaf, lvldiv, i
       integer, allocatable :: leaf(:)
-      real*8, parameter :: half = 0.5, two = 2, divrat = 1 / sqrt(two)
+      real*8, parameter :: divrat = 1d0 / sqrt(2d0)
       real*8 :: xrng(2), l(d), lrng(2)
       real*8, allocatable :: ctr(:,:)
       logical :: malloc
@@ -222,7 +185,7 @@
       endif
       mnode = 1
       mleaf = 1
-      allocate(lvlx(2,0:mlvl+1), nodex(3,mnode+1), ctr(d,mleaf), &
+      allocate(lvlx(2,0:mlvl+1), xp(mnode+1), nodex(2,mnode), ctr(d,mleaf), &
                leaf(mleaf+1), div(mleaf))
       lvlx(1,0) = 0
       lvlx(1,1) = 1
@@ -234,14 +197,13 @@
         else
           xrng(2) = maxval(x(i,:))
         endif
-        rootx(1,i) = half*(xrng(1) + xrng(2))
-        rootx(2,i) =       xrng(2) - xrng(1)
+        rootx(1,i) = 0.5d0*(xrng(1) + xrng(2))
+        rootx(2,i) =        xrng(2) - xrng(1)
       enddo
-      nodex(1,1:2) = (/ 0, n /)
-      nodex(2,1) =  0
-      nodex(3,1) = -1
+      xp(1:2) = (/ 0, n /)
+      nodex(:,1) = (/ 0, -1 /)
       xi = (/ (i, i = 1, n) /)
-      leaf(1:2) = nodex(1,1:2)
+      leaf(1:2) = xp(1:2)
       ctr(:,1) = rootx(1,:)
       l = rootx(2,:)
       lrng = (/ minval(l), maxval(l) /)
@@ -272,14 +234,14 @@
         do i = 1, d
           if (l(i) > divrat*lrng(2)) then
             lvldiv = ibset(lvldiv, i-1)
-            l(i) = half*l(i)
+            l(i) = 0.5d0*l(i)
           endif
         enddo
         lrng = (/ minval(l), maxval(l) /)
 
 !       hold points if appropriate
         call hypoct_hold(intr, siz, lrng(1), nleaf, leaf, div, &
-                         xi(nodex(1,lvlx(1,nlvl)+1)+1), nodex(1,lvlx(1,nlvl)+1))
+                         xi(xp(lvlx(1,nlvl)+1)+1), xp(lvlx(1,nlvl)+1))
 
 !       stop if none left
         if (leaf(nleaf+1) == 0) exit
@@ -290,8 +252,8 @@
           if (div(i)) then
             call hypoct_subdiv(d, x, lvldiv, lvlx(1,nlvl)+i, ctr(1,i), &
                                leaf(i+1)-leaf(i), &
-                               xi(nodex(1,lvlx(1,nlvl+1)+1)+leaf(i)+1), mnode, &
-                               nnode, nodex)
+                               xi(xp(lvlx(1,nlvl+1)+1)+leaf(i)+1), &
+                               mnode, nnode, xp, nodex)
           endif
         enddo
 
@@ -307,8 +269,9 @@
           call hypoct_malloc1i(leaf, mleaf+1, .true.)
           call hypoct_malloc1l(div, mleaf, .false.)
         endif
-        call hypoct_update(lvlx(1,nlvl), nodex(1,lvlx(1,nlvl+1)+1), d, l, &
-                           lvldiv, nleaf, leaf, ctr)
+        call hypoct_update(lvlx(1,nlvl), xp(lvlx(1,nlvl+1)+1), &
+                           nodex(1,lvlx(1,nlvl+1)+1), d, l, lvldiv, &
+                           nleaf, leaf, ctr)
 
 !       increment tree level
         nlvl = nlvl + 1
@@ -325,9 +288,9 @@
       endif
       lvlx(2,0) = nlvl
       if (nnode < mnode) then
-        call hypoct_malloc2i(nodex, 3, nnode+1, .true.)
+        call hypoct_malloc1i(xp, nnode+1, .true.)
+        call hypoct_malloc2i(nodex, 2, nnode, .true.)
       endif
-      nodex(2:3,nnode+1) = -1
 
      end subroutine
 
@@ -342,7 +305,7 @@
 !    LVLX : INTEGER, DIMENSION(2,0:*), INTENT(IN)
 !      Level data array.
 !
-!    NODEX : INTEGER, DIMENSION(3,*), INTENT(IN)
+!    NODEX : INTEGER, DIMENSION(2,*), INTENT(IN)
 !      Node data array.
 !
 !    CHLDP : INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)
@@ -355,7 +318,7 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: lvlx(2,0:*), nodex(3,*)
+      integer, intent(in) :: lvlx(2,0:*), nodex(2,*)
       integer, allocatable, intent(out) :: chldp(:)
 
 !     local variables
@@ -370,7 +333,7 @@
 !     count number of children for each node
       do i = 1, nlvl
         do j = lvlx(1,i)+1, lvlx(1,i+1)
-          chldp(nodex(2,j)+1) = chldp(nodex(2,j)+1) + 1
+          chldp(nodex(1,j)+1) = chldp(nodex(1,j)+1) + 1
         enddo
       enddo
 
@@ -399,7 +362,7 @@
 !    ROOTX : REAL*8, DIMENSION(2,D), INTENT(IN)
 !      Root data array.
 !
-!    NODEX : INTEGER, DIMENSION(3,*), INTENT(IN)
+!    NODEX : INTEGER, DIMENSION(2,*), INTENT(IN)
 !      Node data array.
 !
 !    L : REAL*8, ALLOCATABLE, DIMENSION(:,:), INTENT(OUT)
@@ -415,13 +378,12 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: d, lvlx(2,0:*), nodex(3,*)
+      integer, intent(in) :: d, lvlx(2,0:*), nodex(2,*)
       real*8, intent(in) :: rootx(2,d)
       real*8, allocatable, intent(out) :: l(:,:), ctr(:,:)
 
 !     local variables
       integer :: nlvl, nnode, i, j, k
-      real*8, parameter :: half = 0.5
       logical :: div(d)
 !     ==========================================================================
 
@@ -438,17 +400,17 @@
         do j = 1, d
           if (ibits(lvlx(2,i+1), j-1, 1) == 1) then
             div(j) = .true.
-            l(j,i) = half*l(j,i)
+            l(j,i) = 0.5d0*l(j,i)
           endif
         enddo
         do j = lvlx(1,i)+1, lvlx(1,i+1)
-          ctr(:,j) = ctr(:,nodex(2,j))
+          ctr(:,j) = ctr(:,nodex(1,j))
           do k = 1, d
             if (div(k)) then
-              if (ibits(nodex(3,j), k-1, 1) == 0) then
-                ctr(k,j) = ctr(k,j) - half*l(k,i)
+              if (ibits(nodex(2,j), k-1, 1) == 0) then
+                ctr(k,j) = ctr(k,j) - 0.5d0*l(k,i)
               else
-                ctr(k,j) = ctr(k,j) + half*l(k,i)
+                ctr(k,j) = ctr(k,j) + 0.5d0*l(k,i)
               endif
             endif
           enddo
@@ -460,9 +422,10 @@
 !*******************************************************************************
      subroutine hypoct_ilst(lvlx, nodex, chldp, nborp, nbori, ilstp, ilsti)
 !*******************************************************************************
-!    Get interaction lists. The interaction list of a given node consists of
-!    those nodes who are the children of its parent's neighbors but who are not
-!    themselves neighbors.
+!    Get interaction lists.
+!
+!    The interaction list of a given node consists of those nodes who are the
+!    children of its parent's neighbors but who are not themselves neighbors.
 !
 !    Arguments
 !    =========
@@ -470,7 +433,7 @@
 !    LVLX : INTEGER, DIMENSION(2,0:*), INTENT(IN)
 !      Level data array.
 !
-!    NODEX : INTEGER, DIMENSION(3,*), INTENT(IN)
+!    NODEX : INTEGER, DIMENSION(2,*), INTENT(IN)
 !      Node data array.
 !
 !    CHLDP : INTEGER, DIMENSION(*), INTENT(IN)
@@ -496,7 +459,7 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: lvlx(2,0:*), nodex(3,*), chldp(*), nborp(*), &
+      integer, intent(in) :: lvlx(2,0:*), nodex(2,*), chldp(*), nborp(*), &
                              nbori(*)
       integer, allocatable, intent(out) :: ilstp(:), ilsti(:)
 
@@ -521,7 +484,7 @@
       nilst = 0
       do ilvl = 2, nlvl
         do inode = lvlx(1,ilvl)+1, lvlx(1,ilvl+1)
-          prnt = nodex(2,inode)
+          prnt = nodex(1,inode)
           do i = nborp(prnt)+1, nborp(prnt+1)
             inbor = nbori(i)
             do ichld = chldp(inbor)+1, chldp(inbor+1)
@@ -561,40 +524,12 @@
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_nbor(d, lvlx, nodex, nborp, nbori)
+     subroutine hypoct_nbor(d, lvlx, nodex, chldp, per, nborp, nbori)
 !*******************************************************************************
 !    Find neighbors.
 !
-!    This routine simplifies the user interface by calling the expert routine
-!    with some common defaults. See HYPOCT_NBORX for details.
-!*******************************************************************************
-
-!     ==========================================================================
-!     variable declarations
-!     --------------------------------------------------------------------------
-!     arguments
-      integer, intent(in) :: d, lvlx(2,0:*), nodex(3,*)
-      integer, allocatable, intent(out) :: nborp(:), nbori(:)
-
-!     local variables
-      integer, allocatable :: chldp(:)
-      logical :: per(d)
-!     ==========================================================================
-
-!     set defaults
-      call hypoct_chld(lvlx, nodex, chldp)
-      per = .false.
-
-!     call main routine
-      call hypoct_nborx(d, lvlx, nodex, chldp, per, nborp, nbori)
-
-     end subroutine
-
-!*******************************************************************************
-     subroutine hypoct_nborx(d, lvlx, nodex, chldp, per, nborp, nbori)
-!*******************************************************************************
-!    Find neighbors (expert). The neighbors of a given node are those nodes at
-!    the same level which adjoin it.
+!    The neighbors of a given node are those nodes at the same level which
+!    adjoin it.
 !
 !    Arguments
 !    =========
@@ -605,7 +540,7 @@
 !    LVLX : INTEGER, DIMENSION(2,0:*), INTENT(IN)
 !      Level data array.
 !
-!    NODEX : INTEGER, DIMENSION(3,*), INTENT(IN)
+!    NODEX : INTEGER, DIMENSION(2,*), INTENT(IN)
 !      Node data array.
 !
 !    CHLDP : INTEGER, DIMENSION(*), INTENT(IN)
@@ -613,7 +548,7 @@
 !
 !    PER : LOGICAL, DIMENSION(D), INTENT(IN)
 !      Periodicity of root node. The domain is periodic in dimension I if
-!      PER(I) = .TRUE. Use EXT in HYPOCT_BUILDX to control the extent of the
+!      PER(I) = .TRUE. Use EXT in HYPOCT_BUILD to control the extent of the
 !      root.
 !
 !    NBORP : INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)
@@ -629,7 +564,7 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: d, lvlx(2,0:*), nodex(3,*), chldp(*)
+      integer, intent(in) :: d, lvlx(2,0:*), nodex(2,*), chldp(*)
       logical, intent(in) :: per(d)
       integer, allocatable, intent(out) :: nborp(:), nbori(:)
 
@@ -657,7 +592,7 @@
         enddo
         do i = 1, nleaf
           do j = 1, d
-            idx(j,i) = ibits(nodex(3,lvlx(1,1)+i), j-1, 1)
+            idx(j,i) = ibits(nodex(2,lvlx(1,1)+i), j-1, 1)
           enddo
           do j = 1, nleaf
             if (i /= j) then
@@ -683,11 +618,11 @@
         idx_(:,1:nleaf) = idx(:,1:nleaf)
         do j = lvlx(1,i)+1, lvlx(1,i+1)
           ileaf = j - lvlx(1,i)
-          idx(:,ileaf) = idx_(:,nodex(2,j)-lvlx(1,i-1))
+          idx(:,ileaf) = idx_(:,nodex(1,j)-lvlx(1,i-1))
           do k = 1, d
             if (ibits(lvlx(2,i+1), k-1, 1) == 1) then
               idx(k,ileaf) = 2*idx(k,ileaf)
-              if (ibits(nodex(3,j), k-1, 1) == 1) then
+              if (ibits(nodex(2,j), k-1, 1) == 1) then
                 idx(k,ileaf) = idx(k,ileaf) + 1
               endif
             endif
@@ -707,7 +642,7 @@
 !       look through children of parent and parent-neighbors (in order)
         do j = lvlx(1,i)+1, lvlx(1,i+1)
           ileaf = j - lvlx(1,i)
-          prnt = nodex(2,j)
+          prnt = nodex(1,j)
           self = .false.
           do k = nborp(prnt)+1, nborp(prnt+1)
             if ((.not. self) .and. (nbori(k) > prnt)) then
@@ -898,7 +833,7 @@
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_hold(intr, siz, lmin, nleaf, leaf, div, xi, nodex)
+     subroutine hypoct_hold(intr, siz, lmin, nleaf, leaf, div, xi, xp)
 !*******************************************************************************
 !    Hold points at current leaf level and sort by hold status. A point is held
 !    if the node to which it is assigned will not be further subdivided or it is
@@ -912,7 +847,7 @@
       character, intent(in) :: intr
       real*8, intent(in) :: siz(*), lmin
       integer, intent(inout) :: nleaf, leaf(nleaf+1), xi(leaf(nleaf+1)), &
-                                nodex(3,nleaf+1)
+                                xp(nleaf+1)
       logical, intent(inout) :: div(nleaf)
 
 !     local variables
@@ -921,7 +856,7 @@
 !     ==========================================================================
 
 !     count points to hold
-      nodex(1,2:nleaf+1) = 0
+      xp(2:nleaf+1) = 0
       do i = 1, nleaf
         if (.not. div(i)) then
           hold(leaf(i)+1:leaf(i+1)) = .true.
@@ -931,16 +866,16 @@
           enddo
         endif
         do j = leaf(i)+1, leaf(i+1)
-          if (hold(j)) nodex(1,i+1) = nodex(1,i+1) + 1
+          if (hold(j)) xp(i+1) = xp(i+1) + 1
         enddo
       enddo
       do i = 1, nleaf
-        nodex(1,i+1) = nodex(1,i) + nodex(1,i+1)
+        xp(i+1) = xp(i) + xp(i+1)
       enddo
 
 !     sort points by hold status
-      ptr(1,:) = nodex(1,1:nleaf) - nodex(1,1)
-      ptr(2,:) = leaf(1:nleaf) - nodex(1,1:nleaf) + nodex(1,nleaf+1)
+      ptr(1,:) = xp(1:nleaf) - xp(1)
+      ptr(2,:) = leaf(1:nleaf) - xp(1:nleaf) + xp(nleaf+1)
       xi_ = xi
       do i = 1, nleaf
         do j = leaf(i)+1, leaf(i+1)
@@ -956,7 +891,7 @@
       enddo
 
 !     update leaf data
-      leaf = leaf - nodex(1,:)
+      leaf = leaf - xp
       leaf = leaf - leaf(1)
 
      end subroutine
@@ -1119,7 +1054,7 @@
 
 !*******************************************************************************
      subroutine hypoct_subdiv(d, x, lvldiv, prnt, ctr, n, xi, mnode, nnode, &
-                              nodex)
+                              xp, nodex)
 !*******************************************************************************
 !    Subdivide leaves and sort.
 !*******************************************************************************
@@ -1131,7 +1066,7 @@
       integer, intent(in) :: d, lvldiv, prnt, n
       real*8, intent(in) :: x(d,*), ctr(d)
       integer, intent(inout) :: xi(n), mnode, nnode
-      integer, allocatable, intent(inout) :: nodex(:,:)
+      integer, allocatable, intent(inout) :: xp(:), nodex(:,:)
 
 !     local variables
       integer :: nchld, id(n), xi_(n), i, j, k
@@ -1145,8 +1080,8 @@
         id(i) = hypoct_chldid(d, x(1,xi(i)), ctr, lvldiv)
         new = .true.
         do j = 1, nchld
-          if (nodex(3,nnode+j) >  id(i)) exit
-          if (nodex(3,nnode+j) == id(i)) then
+          if (nodex(2,nnode+j) >  id(i)) exit
+          if (nodex(2,nnode+j) == id(i)) then
             new = .false.
             exit
           endif
@@ -1158,29 +1093,32 @@
             malloc = .true.
             mnode = 2*mnode
           enddo
-          if (malloc) call hypoct_malloc2i(nodex, 3, mnode+1, .true.)
+          if (malloc) then
+            call hypoct_malloc1i(xp, mnode+1, .true.)
+            call hypoct_malloc2i(nodex, 2, mnode, .true.)
+          endif
           do k = nchld-1, j, -1
-            nodex(1,nnode+k+2) = nodex(1,nnode+k+1)
+            xp(nnode+k+2) = xp(nnode+k+1)
+            nodex(1,nnode+k+1) = nodex(1,nnode+k)
             nodex(2,nnode+k+1) = nodex(2,nnode+k)
-            nodex(3,nnode+k+1) = nodex(3,nnode+k)
           enddo
-          nodex(1,nnode+j+1) = 1
-          nodex(2:3,nnode+j) = (/ prnt, id(i) /)
+          xp(nnode+j+1) = 1
+          nodex(:,nnode+j) = (/ prnt, id(i) /)
         else
-          nodex(1,nnode+j+1) = nodex(1,nnode+j+1) + 1
+          xp(nnode+j+1) = xp(nnode+j+1) + 1
         endif
       enddo
       do i = 1, nchld
-        nodex(1,nnode+i+1) = nodex(1,nnode+i) + nodex(1,nnode+i+1)
+        xp(nnode+i+1) = xp(nnode+i) + xp(nnode+i+1)
       enddo
 
 !     sort points according to new leaves
       allocate(ptr(nchld))
-      ptr = nodex(1,nnode+1:nnode+nchld) - nodex(1,nnode+1)
+      ptr = xp(nnode+1:nnode+nchld) - xp(nnode+1)
       xi_ = xi
       do i = 1, n
         do j = 1, nchld
-          if (nodex(3,nnode+j) == id(i)) exit
+          if (nodex(2,nnode+j) == id(i)) exit
         enddo
         ptr(j) = ptr(j) + 1
         xi(ptr(j)) = xi_(i)
@@ -1192,7 +1130,7 @@
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_update(lvlp, nodex, d, l, lvldiv, n, leaf, ctr)
+     subroutine hypoct_update(lvlp, xp, nodex, d, l, lvldiv, n, leaf, ctr)
 !*******************************************************************************
 !    Update leaf data.
 !*******************************************************************************
@@ -1201,33 +1139,32 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: lvlp, nodex(3,*), d, lvldiv
+      integer, intent(in) :: lvlp, xp(*), nodex(2,*), d, lvldiv
       real*8, intent(in) :: l(d)
       integer, intent(inout) :: n, leaf(n+1)
       real*8, intent(inout) :: ctr(d,*)
 
 !     local variables
       integer :: id, i, j
-      real*8, parameter :: half = 0.5
       real*8 :: ctr_(d,n)
 !     ==========================================================================
 
 !     copy centers of parents
       do i = 1, n
-        ctr_(:,i) = ctr(:,nodex(2,i)-lvlp)
+        ctr_(:,i) = ctr(:,nodex(1,i)-lvlp)
       enddo
       ctr(:,1:n) = ctr_
 
 !     update leaf data
-      leaf = nodex(1,1:n+1) - nodex(1,1)
+      leaf = xp(1:n+1) - xp(1)
       do i = 1, n
-        id = nodex(3,i)
+        id = nodex(2,i)
         do j = 1, d
           if (ibits(lvldiv, j-1, 1) == 1) then
             if (ibits(id, j-1, 1) == 0) then
-              ctr(j,i) = ctr(j,i) - half*l(j)
+              ctr(j,i) = ctr(j,i) - 0.5d0*l(j)
             else
-              ctr(j,i) = ctr(j,i) + half*l(j)
+              ctr(j,i) = ctr(j,i) + 0.5d0*l(j)
             endif
           endif
         enddo

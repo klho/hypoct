@@ -44,7 +44,7 @@ if __name__ == '__main__':
   tree = hypoct.Tree(x, occ=20)
   t = time.clock() - t0
   mb = 1e-6*(tree.lvlx.nbytes + tree.rootx.nbytes + tree.xi.nbytes +
-             tree.nodex.nbytes)
+             tree.xp.nbytes + tree.nodex.nbytes)
   print fmt % (t, mb)
 
   # generate child data
