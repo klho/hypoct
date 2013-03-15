@@ -79,7 +79,8 @@ class Tree:
     _hypoct.nodex = None
 
     # set properties
-    self.properties = {'adap':   adap,
+    self.properties = { 'occ':    occ,
+                       'adap':   adap,
                        'intr':   intr,
                         'siz':    siz,
                      'lvlmax': lvlmax,

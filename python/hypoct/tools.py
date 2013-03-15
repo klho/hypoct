@@ -111,7 +111,7 @@ class TreeVisualizer:
 
     # draw points in node
     if draw_points:
-      for i in range(self.tree.nodex[0,index-1], self.tree.nodex[0,index]):
+      for i in range(self.tree.xp[index-1], self.tree.xp[index]):
         plt.scatter(self.tree.x[0,self.tree.xi[i]-1],
                     self.tree.x[1,self.tree.xi[i]-1], **point_kwargs)
 
@@ -210,9 +210,9 @@ class TreeVisualizer:
         s += "  extent:\n    %s\n" % self.tree.  l[:,i]
 
         # add contained points to description
-        if self.tree.nodex[0,j] < self.tree.nodex[0,j+1]:
+        if self.tree.xp[j] < self.tree.xp[j+1]:
           s += "  points:\n"
-          for k in range(self.tree.nodex[0,j], self.tree.nodex[0,j+1]):
+          for k in range(self.tree.xp[j], self.tree.xp[j+1]):
             l = self.tree.xi[k] - 1
             s += "    %s" % self.tree.x[:,l]
             if 'siz' in self.tree.properties:
