@@ -45,6 +45,10 @@ class Tree:
     if `intr = 'p'`.
   :type siz: :class:`numpy.ndarray`
 
+  :keyword occ:
+    Maximum leaf occupancy.
+  :type occ: int
+
   :keyword lvlmax:
     Maximum tree depth. No maximum if `lvlmax < 0`.
   :type lvlmax: int
@@ -56,7 +60,7 @@ class Tree:
   :type ext: :class:`numpy.ndarray`
   """
 
-  def __init__(self, x, occ=1, adap='a', intr='p', siz=0, lvlmax=-1, ext=0):
+  def __init__(self, x, adap='a', intr='p', siz=0, occ=1, lvlmax=-1, ext=0):
     """
     Initialize.
     """
@@ -79,10 +83,10 @@ class Tree:
     _hypoct.nodex = None
 
     # set properties
-    self.properties = { 'occ':    occ,
-                       'adap':   adap,
+    self.properties = {'adap':   adap,
                        'intr':   intr,
                         'siz':    siz,
+                        'occ':    occ,
                      'lvlmax': lvlmax,
                         'ext':    ext}
 
@@ -131,13 +135,12 @@ class Tree:
       the root.
     :type per: :class:`numpy.ndarray`
     """
-    # generate child data if non-existent
+    # generate child data if nonexistent
     if not self._flags['chld']: self.generate_child_data()
 
-    # process `per` input
+    # process inputs
     per = np.array(per, copy=False, dtype='int32')
-    if (per.size == 1):
-      per = per * np.ones(self.x.shape[0], dtype='int32')
+    if (per.size == 1): per = per * np.ones(self.x.shape[0], dtype='int32')
 
     # call Fortran routine
     _hypoct.hypoct_python_nbor(self.lvlx, self.nodex, self.chldp, per)
@@ -162,7 +165,7 @@ class Tree:
 
     See :meth:`find_neighbors`.
     """
-    # find neighbors if non-existent
+    # find neighbors if nonexistent
     if not self._flags['nbor']: self.find_neighbors()
 
     # call Fortran routine
@@ -175,3 +178,33 @@ class Tree:
 
     # set flags
     self._flags['ilst'] = True
+
+  def search(self, x, mlvl=-1):
+    """
+    Search hyperoctree.
+
+    :param x:
+      Point coordinates, where the coordinate of point `i` is `x[:,i]`.
+    :type x: :class:`numpy.ndarray`
+
+    :keyword mlvl:
+      Maximum tree depth to search. Defaults to full tree depth if `mlvl < 0`.
+    :type mlvl: int
+
+    :return:
+      Tree traversal array. The node containing point `i` at level `j` has index
+      `trav[i,j]`; if no such node exists, then `trav[i,j] = 0`.
+    :rtype: :class:`numpy.ndarray`
+    """
+    # generate child data if nonexistent
+    if not self._flags['chld']: self.generate_child_data()
+
+    # generate geometry data if nonexistent
+    if not self._flags['geom']: self.generate_geometry_data()
+
+    # process inputs
+    if mlvl < 0: mlvl = self.lvlx[1,0]
+
+    # call Fortran routine
+    return _hypoct.hypoct_python_search(x, mlvl, self.lvlx, self.rootx,
+                                        self.nodex, self.chldp, self.ctr)

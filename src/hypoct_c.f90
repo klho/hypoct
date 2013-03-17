@@ -210,4 +210,38 @@
 
      end subroutine
 
+!*******************************************************************************
+     subroutine hypoct_c_search(d, n, x, mlvl, nlvl, nnode, lvlx, rootx, &
+                                nodex, chldp, ctr, trav) &
+                bind(C, name="hypoct_search")
+!*******************************************************************************
+!    C wrapper for HYPOCT_SEARCH.
+!*******************************************************************************
+
+!     ==========================================================================
+!     variable declarations
+!     --------------------------------------------------------------------------
+!     arguments
+      integer(c_int), intent(in) :: d, n, mlvl, nlvl, nnode
+      real(c_double), intent(in) :: x(d,n), rootx(2,d)
+      type(c_ptr), intent(in) :: lvlx, nodex, chldp, ctr
+      integer(c_int), intent(out) :: trav(n,0:mlvl)
+
+!     local variables
+      integer, pointer :: lvlx_(:,:), nodex_(:,:), chldp_(:)
+      real*8, pointer :: ctr_(:,:)
+!     ==========================================================================
+
+!     set inputs
+      call c_f_pointer(lvlx,  lvlx_,  [2, nlvl+2])
+      call c_f_pointer(nodex, nodex_, [2, nnode])
+      call c_f_pointer(chldp, chldp_, [nnode+1])
+      call c_f_pointer(ctr,   ctr_,   [2, nnode])
+
+!     call Fortran routine
+      call hypoct_search(d, n, x, mlvl, lvlx_, rootx, nodex_, chldp_, ctr_, &
+                         trav)
+
+     end subroutine
+
     end module

@@ -45,6 +45,9 @@
 !     interaction list variables
       integer, allocatable :: ilstp(:), ilsti(:)
 
+!     search variables
+      integer, allocatable :: trav(:,:)
+
 !     local variables
       integer :: nlvl, nnode, i
       real*4 :: t, t0
@@ -106,7 +109,7 @@
       mb = i2mb*(size(nborp) + size(nbori))
       print 20, t - t0, mb
 
-!     get interaction list
+!     get interaction lists
       print '(xa,$)', 'Getting interaction lists... '
       call cpu_time(t0)
       call hypoct_ilst(lvlx, nodex, chldp, nborp, nbori, ilstp, ilsti)
@@ -114,8 +117,17 @@
       mb = i2mb*(size(ilstp) + size(ilsti))
       print 20, t - t0, mb
 
+!     search tree
+      print '(xa,$)', 'Searching tree...            '
+      nlvl = lvlx(2,0)
+      allocate(trav(n,0:nlvl))
+      call cpu_time(t0)
+      call hypoct_search(d, n, x, nlvl, lvlx, rootx, nodex, chldp, ctr, trav)
+      call cpu_time(t)
+      mb = i2mb*size(trav)
+      print 20, t - t0, mb
+
 !     print output summary
-      nlvl  = lvlx(2,0)
       nnode = lvlx(1,nlvl+1)
       print 30, nlvl, nnode, nborp(nnode+1), ilstp(nnode+1)
 

@@ -102,6 +102,16 @@ n
   mb = 1e-6*sizeof(int)*(nnode + 1 + nilst);
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
+  // search tree
+  printf("Searching tree...            ");
+  int *trav = (int *) malloc(n*(nlvl + 1)*sizeof(int));
+  t0 = clock();
+  hypoct_search(&d, &n, x, &nlvl, &nlvl, &nnode, &lvlx, *rootx, &nodex, &chldp,
+                &ctr, trav);
+  t = clock();
+  mb = 1e-6*sizeof(int)*(n*(nlvl + 1));
+  printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
+
   // print output summary
   printf("\
 ----------------------------------------------------\n\
@@ -116,10 +126,12 @@ nlvl, nnode, nborp[nnode], ilstp[nnode]
   free(    x);
   free(  siz);
   free( lvlx);
+  free(   xi);
+  free(   xp);
   free(nodex);
+  free(chldp);
   free(    l);
   free(  ctr);
-  free(chldp);
   free(nborp);
   free(nbori);
   free(ilstp);

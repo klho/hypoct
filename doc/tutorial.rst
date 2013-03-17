@@ -144,6 +144,17 @@ Recall that interaction lists are often utilized in fast multipole-type algorith
 
 This command requires that the neighbor data from :meth:`hypoct.Tree.find_neighbors` have already been generated; if this is not the case, then this is done automatically using default settings. Outputs include the pointer and index arrays ``tree.ilstp`` and ``tree.ilsti``, respectively.
 
+Searching the tree
+------------------
+
+It is often also useful to be able to search the tree for a given set of points. This can be done via::
+
+>>> trav = tree.search(x)
+
+where ``x`` is the set of points to search for. The output ``trav`` is an array that records the tree traversal history for each point: the node containing the point ``x[:,i]`` at level ``j`` has index ``trav[i,j]``; if no such node exists, then ``trav[i,j] = 0``. By default, the tree is traversed fully from top to bottom. To limit the maximum tree depth searched, use the keyword ``mlvl``.
+
+This command requires that child and geometry data have already been generated; if this is not the case, then this is done automatically.
+
 Putting it all together
 -----------------------
 

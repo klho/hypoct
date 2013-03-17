@@ -52,11 +52,12 @@
 !   ----------------------------------------------------------------------------
 !   User-level routines
 !   ----------------------------------------------------------------------------
-!   hypoct_build - build hyperoctree
-!   hypoct_chld  - generate child data
-!   hypoct_geom  - generate geometry data
-!   hypoct_ilst  - get interaction lists
-!   hypoct_nbor  - find neighbors
+!   hypoct_build  - build hyperoctree
+!   hypoct_chld   - generate child data
+!   hypoct_geom   - generate geometry data
+!   hypoct_ilst   - get interaction lists
+!   hypoct_nbor   - find neighbors
+!   hypoct_search - search hyperoctree
 !*******************************************************************************
      implicit none
 
@@ -665,6 +666,101 @@
       if (nnbor < mnbor) then
         call hypoct_malloc1i(nbori, nnbor, .true.)
       endif
+
+     end subroutine
+
+!*******************************************************************************
+     subroutine hypoct_search(d, n, x, mlvl, lvlx, rootx, nodex, chldp, ctr, &
+                              trav)
+!*******************************************************************************
+!    Search hyperoctree.
+!
+!    Arguments
+!    =========
+!
+!    D : INTEGER, INTENT(IN)
+!      Dimension of space. Requires D > 0.
+!
+!    N : INTEGER, INTENT(IN)
+!      Number of points. Requires N > 0.
+!
+!    X : REAL*8, DIMENSION(D,N), INTENT(IN)
+!      Point coordinates.
+!
+!    MLVL : INTEGER, INTENT(IN)
+!      Maximum tree depth to search. Requires MLVL >= 0.
+!
+!    LVLX : INTEGER, DIMENSION(2,0:*), INTENT(IN)
+!      Level data array.
+!
+!    ROOTX : REAL*8, DIMENSION(2,D), INTENT(IN)
+!      Root data array.
+!
+!    NODEX : INTEGER, DIMENSION(2,*), INTENT(IN)
+!      Node data array.
+!
+!    CHLDP : INTEGER, DIMENSION(*), INTENT(IN)
+!      Child pointer array.
+!
+!    CTR : REAL*8, DIMENSION(D,*), INTENT(IN)
+!      Node centers.
+!
+!    TRAV : INTEGER, DIMENSION(N,0:MLVL), INTENT(OUT)
+!      Tree traversal array. The node containing point I at level J has index
+!      TRAV(I,J); if no such node exists, then TRAV(I,J) = 0.
+!*******************************************************************************
+
+!     ==========================================================================
+!     variable declarations
+!     --------------------------------------------------------------------------
+!     arguments
+      integer, intent(in) :: d, n, mlvl, lvlx(2,0:*), nodex(2,*), chldp(*)
+      real*8, intent(in) :: x(d,n), rootx(2,d), ctr(d,*)
+      integer, intent(out) :: trav(n,0:mlvl)
+
+!     local variables
+      character(len=*), parameter :: srname = 'HYPOCT_SEARCH'
+      integer :: id, i, j, k
+      real*8 :: ext(2,d)
+      logical :: found
+!     ==========================================================================
+
+!     handle input errors
+      if (d <= 0) call hypoct_errprm(srname, 'D')
+      if (n <= 0) call hypoct_errprm(srname, 'N')
+      if (mlvl < 0) call hypoct_errprm(srname, 'MLVL')
+
+!     initialize
+      ext(1,:) = ctr(:,1) - 0.5d0*rootx(2,:)
+      ext(2,:) = ctr(:,1) + 0.5d0*rootx(2,:)
+
+!     loop through points
+      do i = 1, n
+
+!       check if in root
+        if (.not. all((ext(1,:) <= x(:,i)) .and. (x(:,i) <= ext(2,:)))) then
+          trav(i,:) = 0
+          continue
+        endif
+
+!       search children recursively
+        trav(i,0) = 1
+        do j = 1, mlvl
+          id = hypoct_chldid(d, x(1,i), ctr(1,trav(i,j-1)), lvlx(2,j+1))
+          found = .false.
+          do k = chldp(trav(i,j-1))+1, chldp(trav(i,j-1)+1)
+            if (nodex(2,k) == id) then
+              trav(i,j) = k
+              found = .true.
+              exit
+            endif
+          enddo
+          if (.not. found) then
+            trav(i,j:) = 0
+            continue
+          endif
+        enddo
+      enddo
 
      end subroutine
 

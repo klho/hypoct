@@ -71,12 +71,20 @@ if __name__ == '__main__':
   mb = 1e-6*(tree.nborp.nbytes + tree.nbori.nbytes)
   print fmt % (t, mb)
 
-  # get interaction list
+  # get interaction lists
   print "Getting interaction lists...",
   t0 = time.clock()
   tree.get_interaction_lists()
   t = time.clock() - t0
   mb = 1e-6*(tree.ilstp.nbytes + tree.ilsti.nbytes)
+  print fmt % (t, mb)
+
+  # search tree
+  print "Searching tree...           ",
+  t0 = time.clock()
+  trav = tree.search(x)
+  t = time.clock() - t0
+  mb = 1e-6*trav.nbytes
   print fmt % (t, mb)
 
   # print output summary

@@ -128,4 +128,24 @@
 
      end subroutine
 
+!*******************************************************************************
+     subroutine hypoct_python_search(d, n, x, mlvl, lvlx, rootx, nodex, chldp, &
+                                     ctr, trav)
+!*******************************************************************************
+!    Python wrapper for HYPOCT_SEARCH.
+!*******************************************************************************
+
+!     ==========================================================================
+!     variable declarations
+!     --------------------------------------------------------------------------
+!     arguments
+      integer, intent(in) :: d, n, mlvl, lvlx(2,0:*), nodex(2,*), chldp(*)
+      real*8, intent(in) :: x(d,n), rootx(2,d), ctr(d,*)
+      integer, intent(out) :: trav(n,0:mlvl)
+!     ==========================================================================
+
+      call hypoct_search(d, n, x, mlvl, lvlx, rootx, nodex, chldp, ctr, trav)
+
+     end subroutine
+
     end module

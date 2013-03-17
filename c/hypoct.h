@@ -88,3 +88,15 @@ extern void hypoct_nbor(
   int *d, int *nlvl, int *nnode, int **lvlx, int **nodex, int **chldp,
   int per[], int *nnbor, int **nborp, int **nbori
 );
+
+/*
+ * Search hyperoctree.
+ *
+ * Additional arguments:
+ *   NLVL  - tree depth     (input)
+ *   NNODE - numbe of nodes (input)
+ */
+extern void hypoct_search(
+  int *d, int *n, double x[], int *mlvl, int *nlvl, int *nnode, int **lvlx,
+  double rootx[], int **nodex, int **chldp, double **ctr, int trav[]
+);
