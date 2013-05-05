@@ -65,9 +65,9 @@ class Tree:
     Initialize.
     """
     # process inputs
-    self.x = np.array(  x, copy=False, dtype='float64', order='F')
-    siz    = np.array(siz, copy=False, dtype='float64')
-    ext    = np.array(ext, copy=False, dtype='float64')
+    self.x = np.asfortranarray(x)
+    siz    = np.asfortranarray(siz)
+    ext    = np.asfortranarray(ext)
     d, n = self.x.shape
     if (siz.size == 1): siz = siz * np.ones(n)
     if (ext.size == 1): ext = ext * np.ones(d)
@@ -75,9 +75,9 @@ class Tree:
     # call Fortran routine
     self.rootx, self.xi = _hypoct.hypoct_python_build(adap, intr, self.x, siz,
                                                       occ, lvlmax, ext)
-    self.lvlx  = np.array(_hypoct.lvlx,  order='F')
-    self.xp    = np.array(_hypoct.xp,    order='F')
-    self.nodex = np.array(_hypoct.nodex, order='F')
+    self.lvlx  = np.array(_hypoct.lvlx)
+    self.xp    = np.array(_hypoct.xp)
+    self.nodex = np.array(_hypoct.nodex)
     _hypoct.lvlx  = None
     _hypoct.xp    = None
     _hypoct.nodex = None
@@ -114,8 +114,8 @@ class Tree:
     """
     # call Fortran routine
     _hypoct.hypoct_python_geom(self.lvlx, self.rootx, self.nodex)
-    self.l   = np.array(_hypoct.l,   order='F')
-    self.ctr = np.array(_hypoct.ctr, order='F')
+    self.l   = np.array(_hypoct.l)
+    self.ctr = np.array(_hypoct.ctr)
     _hypoct.l   = None
     _hypoct.ctr = None
 
@@ -126,8 +126,9 @@ class Tree:
     """
     Find neighbors.
 
-    The neighbors of a given node are those nodes at the same level which adjoin
-    it.
+    The neighbors of a given node are those nodes at the same level or higher
+    that are nonempty and within one of the nodes' sizes of each other. A node
+    is not considered its own neighbor.
 
     :param per:
       Periodicity of root note. The domain is periodic in dimension `i` if
@@ -139,7 +140,7 @@ class Tree:
     if not self._flags['chld']: self.generate_child_data()
 
     # process inputs
-    per = np.array(per, copy=False, dtype='int32')
+    per = np.asfortranarray(per, dtype='int32')
     if (per.size == 1): per = per * np.ones(self.x.shape[0], dtype='int32')
 
     # call Fortran routine
@@ -160,8 +161,9 @@ class Tree:
     """
     Get interaction lists.
 
-    The interaction list of a given node consists of those nodes who are the
-    children of its parent's neighbors but who are not themselves neighbors.
+    The interaction list of a given node consists of those nodes at the same
+    level that are the children of its parent's neighbors but which are not
+    themselves neighbors of the node.
 
     See :meth:`find_neighbors`.
     """
