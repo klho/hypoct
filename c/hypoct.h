@@ -73,7 +73,7 @@ extern void hypoct_geom(
  */
 extern void hypoct_ilst(
   int *nlvl, int *nnode, int **lvlx, int **nodex, int **chldp, int *nnbor,
-  int **nborp, int **nbori, int *nilst, int **ilstp, int **ilsti
+  int **nborp, int **nbori, int *nilst, int **ilsti, int **ilstp
 );
 
 /*
@@ -85,8 +85,8 @@ extern void hypoct_ilst(
  *   NNBOR - total number of neighbors (output)
  */
 extern void hypoct_nbor(
-  int *d, int *nlvl, int *nnode, int **lvlx, int **nodex, int **chldp,
-  int per[], int *nnbor, int **nborp, int **nbori
+  int *d, int *nlvl, int *nnode, int **lvlx, int **xp, int **nodex, int **chldp,
+  int per[], int *nnbor, int **nbori, int **nborp
 );
 
 /*

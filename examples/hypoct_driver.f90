@@ -104,7 +104,7 @@
       allocate(per(d))
       per = .false.
       call cpu_time(t0)
-      call hypoct_nbor(d, lvlx, nodex, chldp, per, nborp, nbori)
+      call hypoct_nbor(d, lvlx, xp, nodex, chldp, per, nbori, nborp)
       call cpu_time(t)
       mb = i2mb*(size(nborp) + size(nbori))
       print 20, t - t0, mb
@@ -112,7 +112,7 @@
 !     get interaction lists
       print '(xa,$)', 'Getting interaction lists... '
       call cpu_time(t0)
-      call hypoct_ilst(lvlx, nodex, chldp, nborp, nbori, ilstp, ilsti)
+      call hypoct_ilst(lvlx, nodex, chldp, nbori, nborp, ilsti, ilstp)
       call cpu_time(t)
       mb = i2mb*(size(ilstp) + size(ilsti))
       print 20, t - t0, mb

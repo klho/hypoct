@@ -28,8 +28,7 @@
 
 !    allocatable arrays
      integer, allocatable :: lvlx(:,:), xp(:), nodex(:,:), chldp(:), &
-                             nborp(:), nbori(:), ilstp(:), ilsti(:), &
-                             rxp(:), cxp(:)
+                             nbori(:), nborp(:), ilsti(:), ilstp(:)
      real*8, allocatable :: l(:,:), ctr(:,:)
 
     contains
@@ -93,7 +92,7 @@
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_python_ilst(lvlx, nodex, chldp, nborp, nbori)
+     subroutine hypoct_python_ilst(lvlx, nodex, chldp, nbori, nborp)
 !*******************************************************************************
 !    Python wrapper for HYPOCT_ILST.
 !*******************************************************************************
@@ -102,16 +101,16 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: lvlx(2,0:*), nodex(2,*), chldp(*), nborp(*), &
-                             nbori(*)
+      integer, intent(in) :: lvlx(2,0:*), nodex(2,*), chldp(*), nbori(*), &
+                             nborp(*)
 !     ==========================================================================
 
-      call hypoct_ilst(lvlx, nodex, chldp, nborp, nbori, ilstp, ilsti)
+      call hypoct_ilst(lvlx, nodex, chldp, nbori, nborp, ilsti, ilstp)
 
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_python_nbor(d, lvlx, nodex, chldp, per)
+     subroutine hypoct_python_nbor(d, lvlx, xp, nodex, chldp, per)
 !*******************************************************************************
 !    Python wrapper for HYPOCT_NBOR.
 !*******************************************************************************
@@ -120,11 +119,11 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: d, lvlx(2,0:*), nodex(2,*), chldp(*)
+      integer, intent(in) :: d, lvlx(2,0:*), xp(*), nodex(2,*), chldp(*)
       logical, intent(in) :: per(d)
 !     ==========================================================================
 
-      call hypoct_nbor(d, lvlx, nodex, chldp, per, nborp, nbori)
+      call hypoct_nbor(d, lvlx, xp, nodex, chldp, per, nbori, nborp)
 
      end subroutine
 

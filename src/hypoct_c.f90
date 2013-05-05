@@ -132,8 +132,8 @@
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_c_ilst(nlvl, nnode, lvlx, nodex, chldp, nnbor, nborp, &
-                              nbori, nilst, ilstp, ilsti) &
+     subroutine hypoct_c_ilst(nlvl, nnode, lvlx, nodex, chldp, nnbor, nbori, &
+                              nborp, nilst, ilsti, ilstp) &
                 bind(C, name="hypoct_ilst")
 !*******************************************************************************
 !    C wrapper for HYPOCT_ILST.
@@ -144,36 +144,36 @@
 !     --------------------------------------------------------------------------
 !     arguments
       integer(c_int), intent(in) :: nlvl, nnode, nnbor
-      type(c_ptr), intent(in) :: lvlx, nodex, chldp, nborp, nbori
+      type(c_ptr), intent(in) :: lvlx, nodex, chldp, nbori, nborp
       integer(c_int), intent(out) :: nilst
-      type(c_ptr), intent(out) :: ilstp, ilsti
+      type(c_ptr), intent(out) :: ilsti, ilstp
 
 !     local variables
-      integer, pointer :: lvlx_(:,:), nodex_(:,:), chldp_(:), nborp_(:), &
-                          nbori_(:)
-      integer, allocatable, target, save :: ilstp_(:), ilsti_(:)
+      integer, pointer :: lvlx_(:,:), nodex_(:,:), chldp_(:), nbori_(:), &
+                          nborp_(:)
+      integer, allocatable, target, save :: ilsti_(:), ilstp_(:)
 !     ==========================================================================
 
 !     set inputs
       call c_f_pointer(lvlx,  lvlx_,  [2, nlvl+2])
       call c_f_pointer(nodex, nodex_, [2, nnode])
       call c_f_pointer(chldp, chldp_, [nnode+1])
-      call c_f_pointer(nborp, nborp_, [nnode+1])
       call c_f_pointer(nbori, nbori_, [nnbor])
+      call c_f_pointer(nborp, nborp_, [nnode+1])
 
 !     call Fortran routine
-      call hypoct_ilst(lvlx_, nodex_, chldp_, nborp_, nbori_, ilstp_, ilsti_)
+      call hypoct_ilst(lvlx_, nodex_, chldp_, nbori_, nborp_, ilsti_, ilstp_)
 
 !     set outputs
       nilst = ilstp_(nnode+1)
-      ilstp = c_loc(ilstp_)
       ilsti = c_loc(ilsti_)
+      ilstp = c_loc(ilstp_)
 
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_c_nbor(d, nlvl, nnode, lvlx, nodex, chldp, per, &
-                              nnbor, nborp, nbori) &
+     subroutine hypoct_c_nbor(d, nlvl, nnode, lvlx, xp, nodex, chldp, per, &
+                              nnbor, nbori, nborp) &
                 bind(C, name="hypoct_nbor")
 !*******************************************************************************
 !    C wrapper for HYPOCT_NBOR.
@@ -184,29 +184,30 @@
 !     --------------------------------------------------------------------------
 !     arguments
       integer(c_int), intent(in) :: d, nlvl, nnode, per(d)
-      type(c_ptr), intent(in) :: lvlx, nodex, chldp
+      type(c_ptr), intent(in) :: lvlx, xp, nodex, chldp
       integer(c_int), intent(out) :: nnbor
-      type(c_ptr), intent(out) :: nborp, nbori
+      type(c_ptr), intent(out) :: nbori, nborp
 
 !     local variables
-      integer, pointer :: lvlx_(:,:), nodex_(:,:), chldp_(:)
-      integer, allocatable, target, save :: nborp_(:), nbori_(:)
+      integer, pointer :: lvlx_(:,:), xp_(:), nodex_(:,:), chldp_(:)
+      integer, allocatable, target, save :: nbori_(:), nborp_(:)
       logical :: per_(d)
 !     ==========================================================================
 
 !     set inputs
       call c_f_pointer(lvlx,  lvlx_,  [2, nlvl+2])
+      call c_f_pointer(xp,    xp_,    [nnode+1])
       call c_f_pointer(nodex, nodex_, [2, nnode])
       call c_f_pointer(chldp, chldp_, [nnode+1])
       per_ = (per /= 0)
 
 !     call Fortran routine
-      call hypoct_nbor(d, lvlx_, nodex_, chldp_, per_, nborp_, nbori_)
+      call hypoct_nbor(d, lvlx_, xp_, nodex_, chldp_, per_, nbori_, nborp_)
 
 !     set outputs
       nnbor = nborp_(nnode+1)
-      nborp = c_loc(nborp_)
       nbori = c_loc(nbori_)
+      nborp = c_loc(nborp_)
 
      end subroutine
 

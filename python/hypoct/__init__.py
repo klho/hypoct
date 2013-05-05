@@ -143,9 +143,9 @@ class Tree:
     if (per.size == 1): per = per * np.ones(self.x.shape[0], dtype='int32')
 
     # call Fortran routine
-    _hypoct.hypoct_python_nbor(self.lvlx, self.nodex, self.chldp, per)
-    self.nborp = np.array(_hypoct.nborp)
+    _hypoct.hypoct_python_nbor(self.lvlx, self.xp, self.nodex, self.chldp, per)
     self.nbori = np.array(_hypoct.nbori)
+    self.nborp = np.array(_hypoct.nborp)
     _hypoct.nborp = None
     if _hypoct.nbori.size > 0: _hypoct.nbori = None
 
@@ -170,9 +170,9 @@ class Tree:
 
     # call Fortran routine
     _hypoct.hypoct_python_ilst(self.lvlx, self.nodex, self.chldp,
-                                     self.nborp, self.nbori)
-    self.ilstp = np.array(_hypoct.ilstp)
+                               self.nbori, self.nborp)
     self.ilsti = np.array(_hypoct.ilsti)
+    self.ilstp = np.array(_hypoct.ilstp)
     _hypoct.ilstp = None
     if _hypoct.ilsti.size > 0: _hypoct.ilsti = None
 

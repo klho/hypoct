@@ -86,8 +86,8 @@
 !        INTR = 'p': point-point
 !        INTR = 'c': point-element (collocation or qualocation)
 !        INTR = 'g': element-element (Galerkin)
-!      The interaction type controls how points are assigned to nodes. If
-!      INTR = 'p', then SIZ is ignored.
+!      The interaction type controls how points are assigned to nodes according
+!      to their sizes. If INTR = 'p', then SIZ is ignored.
 !
 !    D : INTEGER, INTENT(IN)
 !      Dimension of space. Requires D > 0.
@@ -106,7 +106,8 @@
 !      Maximum leaf occupancy.
 !
 !    LVLMAX : INTEGER, INTENT(IN)
-!      Maximum tree depth. No maximum if LVLMAX < 0.
+!      Maximum tree depth. The root is defined to have level zero. No maximum if
+!      LVLMAX < 0.
 !
 !    EXT : REAL*8, DIMENSION(D), INTENT(IN)
 !      Extent of root node. If EXT(I) <= 0, then the extent in dimension I is
@@ -421,12 +422,13 @@
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_ilst(lvlx, nodex, chldp, nborp, nbori, ilstp, ilsti)
+     subroutine hypoct_ilst(lvlx, nodex, chldp, nbori, nborp, ilsti, ilstp)
 !*******************************************************************************
 !    Get interaction lists.
 !
-!    The interaction list of a given node consists of those nodes who are the
-!    children of its parent's neighbors but who are not themselves neighbors.
+!    The interaction list of a given node consists of those nodes at the same
+!    level that are the children of its parent's neighbors but which are not
+!    themselves neighbors of the node.
 !
 !    Arguments
 !    =========
@@ -446,23 +448,22 @@
 !    NBORI : INTEGER, DIMENSION(*), INTENT(IN)
 !      Neighbor indices.
 !
-!    ILSTP : INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)
-!      Interaction list pointer array. On exit, ILSTP has dimension NNODE + 1,
-!      where NNODE is the total number of nodes.
-!
 !    ILSTI : INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)
 !      Interaction list indices. On exit, ILSTI has dimension ILSTP(NNODE+1).
-!      The nodes in the interation list of node I have ordered indices
-!      ILSTI(ILSTP(I)+1:ILSTP(I+1)).
+!
+!    ILSTP : INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)
+!      Interaction list pointer array. On exit, ILSTP has dimension NNODE + 1,
+!      where NNODE is the total number of nodes. The nodes in the interation
+!      list of node I have ordered indices ILSTI(ILSTP(I)+1:ILSTP(I+1)).
 !*******************************************************************************
 
 !     ==========================================================================
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: lvlx(2,0:*), nodex(2,*), chldp(*), nborp(*), &
-                             nbori(*)
-      integer, allocatable, intent(out) :: ilstp(:), ilsti(:)
+      integer, intent(in) :: lvlx(2,0:*), nodex(2,*), chldp(*), nbori(*), &
+                             nborp(*)
+      integer, allocatable, intent(out) :: ilsti(:), ilstp(:)
 
 !     local variables
       integer :: nlvl, milst, nilst, ilvl, inode, inbor, ichld, prnt, i, j
@@ -488,6 +489,7 @@
           prnt = nodex(1,inode)
           do i = nborp(prnt)+1, nborp(prnt+1)
             inbor = nbori(i)
+            if (inbor <= lvlx(1,ilvl-1)) cycle
             do ichld = chldp(inbor)+1, chldp(inbor+1)
               intr = .true.
               do j = nborp(inode)+1, nborp(inode+1)
@@ -521,16 +523,16 @@
       if (nilst < milst) then
         call hypoct_malloc1i(ilsti, nilst, .true.)
       endif
-
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_nbor(d, lvlx, nodex, chldp, per, nborp, nbori)
+     subroutine hypoct_nbor(d, lvlx, xp, nodex, chldp, per, nbori, nborp)
 !*******************************************************************************
 !    Find neighbors.
 !
-!    The neighbors of a given node are those nodes at the same level which
-!    adjoin it.
+!    The neighbors of a given node are those nodes at the same level or higher
+!    that are nonempty and within one of the nodes' sizes of each other. A node
+!    is not considered its own neighbor.
 !
 !    Arguments
 !    =========
@@ -540,6 +542,9 @@
 !
 !    LVLX : INTEGER, DIMENSION(2,0:*), INTENT(IN)
 !      Level data array.
+!
+!    XP : INTEGER, DIMENSION(*), INTENT(IN)
+!      Node pointer array.
 !
 !    NODEX : INTEGER, DIMENSION(2,*), INTENT(IN)
 !      Node data array.
@@ -552,27 +557,28 @@
 !      PER(I) = .TRUE. Use EXT in HYPOCT_BUILD to control the extent of the
 !      root.
 !
+!    NBORI : INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)
+!      Neighbor indices. On exit, NBORI has dimension NBORP(NNODE+1).
+!
 !    NBORP : INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)
 !      Neighbor pointer array. On exit, NBORP has dimension NNODE + 1, where
-!      NNODE is the total number of nodes.
-!
-!    NBORI : INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)
-!      Neighbor indices. On exit, NBORI has dimension NBORP(NNODE+1). The
-!      neighbors of node I have ordered indices NBORI(NBORP(I)+1:NBORP(I+1)).
+!      NNODE is the total number of nodes. The neighbors of node I have ordered
+!      indices NBORI(NBORP(I)+1:NBORP(I+1)).
 !*******************************************************************************
 
 !     ==========================================================================
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: d, lvlx(2,0:*), nodex(2,*), chldp(*)
+      integer, intent(in) :: d, lvlx(2,0:*), xp(*), nodex(2,*), chldp(*)
       logical, intent(in) :: per(d)
-      integer, allocatable, intent(out) :: nborp(:), nbori(:)
+      integer, allocatable, intent(out) :: nbori(:), nborp(:)
 
 !     local variables
-      integer :: nlvl, nleaf, mnbor, nnbor, nlatt(d), ileaf, prnt, i, j, k
+      integer :: nlvl, nleaf, mnbor, nnbor, nnbor_, nlatt(d), ileaf, inbor, &
+                 prnt, i, j, k
       integer, allocatable :: idx(:,:), idx_(:,:)
-      logical :: self
+      logical :: self, malloc
 !     ==========================================================================
 
 !     initialize
@@ -583,18 +589,27 @@
       enddo
       allocate(nborp(lvlx(1,nlvl+1)+1), idx(d,nleaf), idx_(d,nleaf))
       nborp(1:2) = 0
-      nnbor = 0
       if (nlvl > 0) then
         nleaf = lvlx(1,2) - lvlx(1,1)
-        mnbor = nleaf*(nleaf - 1)
+        if (xp(1) < xp(2)) then
+          nnbor = nleaf
+        else
+          nnbor = nleaf - 1
+        endif
+        mnbor = nleaf*nnbor
         allocate(nbori(mnbor))
         do i = lvlx(1,1)+1, lvlx(1,2)
-          nborp(i+1) = nborp(i) + nleaf - 1
+          nborp(i+1) = nborp(i) + nnbor
         enddo
+        nnbor = 0
         do i = 1, nleaf
           do j = 1, d
             idx(j,i) = ibits(nodex(2,lvlx(1,1)+i), j-1, 1)
           enddo
+          if (xp(1) < xp(2)) then
+            nnbor = nnbor + 1
+            nbori(nnbor) = 1
+          endif
           do j = 1, nleaf
             if (i /= j) then
               nnbor = nnbor + 1
@@ -604,8 +619,9 @@
         enddo
         if (any(per)) then
           do i = 1, d
-            nlatt(i) = ibits(lvlx(2,2), i-1, 1) + 1
+            nlatt(i) = ibits(lvlx(2,2), i-1, 1)
           enddo
+          nlatt = nlatt + 1
         endif
       else
         mnbor = 0
@@ -640,24 +656,79 @@
           enddo
         endif
 
-!       look through children of parent and parent-neighbors (in order)
+!       look through nodes
         do j = lvlx(1,i)+1, lvlx(1,i+1)
           ileaf = j - lvlx(1,i)
           prnt = nodex(1,j)
+
+!         allocate storage for parent and parent-neighbors
+          nnbor_ = nnbor
+          if (xp(prnt) < xp(prnt+1)) nnbor_ = nnbor_ + 1
+          do k = nborp(prnt)+1, nborp(prnt+1)
+            inbor = nbori(k)
+            if (inbor <= lvlx(1,i-1)) then
+              nnbor_ = nnbor_ + 1
+            else
+              if (xp(inbor) < xp(inbor+1)) then
+                nnbor_ = nnbor_ + 1
+              endif
+            endif
+          enddo
+          malloc = .false.
+          if (mnbor == 0) then
+            malloc = .true.
+            mnbor = 1
+          endif
+          do while (nnbor_ > mnbor)
+            malloc = .true.
+            mnbor = 2*mnbor
+          enddo
+          if (malloc) call hypoct_malloc1i(nbori, mnbor, .true.)
+
+!         look through parent and parent-neighbors
           self = .false.
           do k = nborp(prnt)+1, nborp(prnt+1)
-            if ((.not. self) .and. (nbori(k) > prnt)) then
-              call hypoct_chldnbor(d, chldp, per, idx, nlatt, ileaf, prnt, &
-                                   lvlx(1,i), mnbor, nnbor, nbori)
+            inbor = nbori(k)
+            if (inbor <= lvlx(1,i-1)) then
+              nnbor = nnbor + 1
+              nbori(nnbor) = inbor
+            else
+              if (xp(inbor) < xp(inbor+1)) then
+                if ((xp(prnt) < xp(prnt+1)) .and. (.not. self) &
+                                            .and. (inbor > prnt)) then
+                  nnbor = nnbor + 1
+                  nbori(nnbor) = prnt
+                  self = .true.
+                endif
+                nnbor = nnbor + 1
+                nbori(nnbor) = inbor
+              endif
+            endif
+          enddo
+          if ((xp(prnt) < xp(prnt+1)) .and. (.not. self)) then
+            nnbor = nnbor + 1
+            nbori(nnbor) = prnt
+          endif
+
+!         look through children of parent and parent-neighbors
+          self = .false.
+          do k = nborp(prnt)+1, nborp(prnt+1)
+            inbor = nbori(k)
+            if (inbor <= lvlx(1,i-1)) cycle
+            if ((.not. self) .and. (inbor > prnt)) then
+              call hypoct_nborch(d, chldp, per, idx, nlatt, ileaf, prnt, &
+                                 lvlx(1,i), mnbor, nnbor, nbori)
               self = .true.
             endif
-            call hypoct_chldnbor(d, chldp, per, idx, nlatt, ileaf, nbori(k), &
-                                 lvlx(1,i), mnbor, nnbor, nbori)
+            call hypoct_nborch(d, chldp, per, idx, nlatt, ileaf, inbor, &
+                               lvlx(1,i), mnbor, nnbor, nbori)
           enddo
           if (.not. self) then
-            call hypoct_chldnbor(d, chldp, per, idx, nlatt, ileaf, prnt, &
-                                 lvlx(1,i), mnbor, nnbor, nbori)
+            call hypoct_nborch(d, chldp, per, idx, nlatt, ileaf, prnt, &
+                               lvlx(1,i), mnbor, nnbor, nbori)
           endif
+
+!         update number of neighbors
           nborp(j+1) = nnbor
         enddo
       enddo
@@ -740,7 +811,7 @@
 !       check if in root
         if (.not. all((ext(1,:) <= x(:,i)) .and. (x(:,i) <= ext(2,:)))) then
           trav(i,:) = 0
-          continue
+          cycle
         endif
 
 !       search children recursively
@@ -757,7 +828,7 @@
           enddo
           if (.not. found) then
             trav(i,j:) = 0
-            continue
+            exit
           endif
         enddo
       enddo
@@ -828,67 +899,6 @@
       enddo
 
      end function
-
-!*******************************************************************************
-     subroutine hypoct_chldnbor(d, chldp, per, idx, nlatt, ileaf, prnt, lvln, &
-                                mnbor, nnbor, nbori)
-!*******************************************************************************
-!    Find neighbors among children of a given node.
-!*******************************************************************************
-
-!     ==========================================================================
-!     variable declarations
-!     --------------------------------------------------------------------------
-!     arguments
-      integer, intent(in) :: d, chldp(*), idx(d,*), nlatt(d), ileaf, prnt, lvln
-      logical, intent(in) :: per(d)
-      integer, intent(inout) :: mnbor, nnbor
-      integer, allocatable, intent(inout) :: nbori(:)
-
-!     local variables
-      integer :: jleaf, i, j
-      logical :: nbor(d), malloc
-!     ==========================================================================
-
-!     loop through children
-      do i = chldp(prnt)+1, chldp(prnt+1)
-        jleaf = i - lvln
-
-!       cycle if same node
-        if (ileaf ==  jleaf) cycle
-
-!       check if neighbor
-        nbor = .false.
-        do j = 1, d
-          if (abs(idx(j,ileaf) - idx(j,jleaf)) < 2) then
-            nbor(j) = .true.
-          endif
-          if (per(j)) then
-            if ((abs(idx(j,ileaf) - idx(j,jleaf) + nlatt(j)) < 2) .or. &
-                (abs(idx(j,ileaf) - idx(j,jleaf) - nlatt(j)) < 2)) then
-              nbor(j) = .true.
-            endif
-          endif
-        enddo
-
-!       add to neighbor list
-        if (all(nbor)) then
-          nnbor = nnbor + 1
-          malloc = .false.
-          if (mnbor == 0) then
-            malloc = .true.
-            mnbor = 1
-          endif
-          do while (nnbor > mnbor)
-            malloc = .true.
-            mnbor = 2*mnbor
-          enddo
-          if (malloc) call hypoct_malloc1i(nbori, mnbor, .true.)
-          nbori(nnbor) = i
-        endif
-      enddo
-
-     end subroutine
 
 !*******************************************************************************
      subroutine hypoct_errmsg(msg)
@@ -1145,6 +1155,67 @@
       deallocate(a)
       allocate(a(l1:ub1,l2:ub2))
       a(l1:u1,l2:u2) = b
+
+     end subroutine
+
+!*******************************************************************************
+     subroutine hypoct_nborch(d, chldp, per, idx, nlatt, ileaf, prnt, lvln, &
+                              mnbor, nnbor, nbori)
+!*******************************************************************************
+!    Find neighbors among children of a given node at the previous level.
+!*******************************************************************************
+
+!     ==========================================================================
+!     variable declarations
+!     --------------------------------------------------------------------------
+!     arguments
+      integer, intent(in) :: d, chldp(*), idx(d,*), nlatt(d), ileaf, prnt, lvln
+      logical, intent(in) :: per(d)
+      integer, intent(inout) :: mnbor, nnbor
+      integer, allocatable, intent(inout) :: nbori(:)
+
+!     local variables
+      integer :: jleaf, i, j
+      logical :: nbor(d), malloc
+!     ==========================================================================
+
+!     loop through children
+      do i = chldp(prnt)+1, chldp(prnt+1)
+        jleaf = i - lvln
+
+!       cycle if same node
+        if (ileaf == jleaf) cycle
+
+!       check if neighbor
+        nbor = .false.
+        do j = 1, d
+          if (abs(idx(j,ileaf) - idx(j,jleaf)) <= 1) then
+            nbor(j) = .true.
+          endif
+          if (per(j)) then
+            if ((abs(idx(j,ileaf) - idx(j,jleaf) + nlatt(j)) <= 1) .or. &
+                (abs(idx(j,ileaf) - idx(j,jleaf) - nlatt(j)) <= 1)) then
+              nbor(j) = .true.
+            endif
+          endif
+        enddo
+
+!       add to neighbor list
+        if (all(nbor)) then
+          nnbor = nnbor + 1
+          malloc = .false.
+          if (mnbor == 0) then
+            malloc = .true.
+            mnbor = 1
+          endif
+          do while (nnbor > mnbor)
+            malloc = .true.
+            mnbor = 2*mnbor
+          enddo
+          if (malloc) call hypoct_malloc1i(nbori, mnbor, .true.)
+          nbori(nnbor) = i
+        endif
+      enddo
 
      end subroutine
 

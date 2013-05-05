@@ -86,8 +86,8 @@ n
   int per[d], nnbor, *nborp, *nbori;
   for (i = 0; i < d; i++) { per[i] = 0; }
   t0 = clock();
-  hypoct_nbor(&d, &nlvl, &nnode, &lvlx, &nodex, &chldp, per,
-              &nnbor, &nborp, &nbori);
+  hypoct_nbor(&d, &nlvl, &nnode, &lvlx, &xp, &nodex, &chldp, per,
+              &nnbor, &nbori, &nborp);
   t = clock();
   mb = 1e-6*sizeof(int)*(nnode + 1 + nnbor);
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
@@ -96,8 +96,8 @@ n
   printf("Getting interaction lists... ");
   int nilst, *ilstp, *ilsti;
   t0 = clock();
-  hypoct_ilst(&nlvl, &nnode, &lvlx, &nodex, &chldp, &nnbor, &nborp, &nbori,
-              &nilst, &ilstp, &ilsti);
+  hypoct_ilst(&nlvl, &nnode, &lvlx, &nodex, &chldp, &nnbor, &nbori, &nborp,
+              &nilst, &ilsti, &ilstp);
   t = clock();
   mb = 1e-6*sizeof(int)*(nnode + 1 + nilst);
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);

@@ -123,7 +123,7 @@ To find the neighbors of each node, type::
 
 >>> tree.find_neighbors()
 
-which creates the neighbor pointer and index arrays ``tree.nborp`` and ``tree.nbori``, respectively. The method also accepts the keyword ``per`` indicating whether the root is periodic in a given dimension. For example, to impose that the root is periodic in the first but not the second dimension, set::
+which creates the neighbor index and pointer arrays ``tree.nbori`` and ``tree.nborp``, respectively. The method also accepts the keyword ``per`` indicating whether the root is periodic in a given dimension. For example, to impose that the root is periodic in the first but not the second dimension, set::
 
 >>> tree.find_neighbors(per=[True, False])
 
@@ -142,7 +142,7 @@ Recall that interaction lists are often utilized in fast multipole-type algorith
 
 >>> tree.get_interaction_lists()
 
-This command requires that the neighbor data from :meth:`hypoct.Tree.find_neighbors` have already been generated; if this is not the case, then this is done automatically using default settings. Outputs include the pointer and index arrays ``tree.ilstp`` and ``tree.ilsti``, respectively.
+This command requires that the neighbor data from :meth:`hypoct.Tree.find_neighbors` have already been generated; if this is not the case, then this is done automatically using default settings. Outputs include the index and pointer arrays ``tree.ilsti`` and ``tree.ilstp``, respectively.
 
 Searching the tree
 ------------------
@@ -158,7 +158,7 @@ This command requires that child and geometry data have already been generated; 
 Putting it all together
 -----------------------
 
-A complete program for building a tree and generating all auxiliary data is given as follows::
+A complete example program for building a tree and generating all auxiliary data is given as follows::
 
   import hypoct, numpy as np
 
