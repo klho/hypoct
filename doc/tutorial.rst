@@ -168,7 +168,7 @@ A complete example program for building a tree and generating all auxiliary data
   x = np.array([np.cos(theta), np.sin(theta)], order='F')
 
   # build tree
-  tree = hypoct.Tree(x, occ=5)
+  tree = hypoct.Tree(x, occ=4)
   tree.generate_child_data()
   tree.generate_geometry_data()
   tree.find_neighbors()

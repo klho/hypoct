@@ -28,7 +28,7 @@
 !     --------------------------------------------------------------------------
 !     build variables
       character :: adap = 'a', intr = 'p'
-      integer :: d = 2, n = 2**20, occ = 20, lvlmax = -1
+      integer :: d = 2, n = 2**20, occ = 16, lvlmax = -1
       integer, allocatable :: lvlx(:,:), xi(:), xp(:), nodex(:,:)
       real*8, allocatable :: x(:,:), siz(:), ext(:), rootx(:,:)
 

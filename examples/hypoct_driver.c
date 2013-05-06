@@ -52,7 +52,7 @@ n
   // build tree
   printf("Building tree...             ");
   char adap = 'a', intr = 'p';
-  int occ = 20, lvlmax = -1, nlvl, nnode, *lvlx,
+  int occ = 16, lvlmax = -1, nlvl, nnode, *lvlx,
       *xi = (int *) malloc(n*sizeof(int)), *xp, *nodex;
   double rootx[d][2];
   t0 = clock();

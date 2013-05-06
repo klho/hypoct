@@ -41,7 +41,7 @@ if __name__ == '__main__':
   # build tree
   print "Building tree...            ",
   t0 = time.clock()
-  tree = hypoct.Tree(x, occ=20)
+  tree = hypoct.Tree(x, occ=16)
   t = time.clock() - t0
   mb = 1e-6*(tree.lvlx.nbytes + tree.rootx.nbytes + tree.xi.nbytes +
              tree.xp.nbytes + tree.nodex.nbytes)
