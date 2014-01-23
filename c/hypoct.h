@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2013 Kenneth L. Ho
+ * Copyright (C) 2013-2014 Kenneth L. Ho
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,8 +22,8 @@
  * routine, with arguments of the same name playing the same role. Note that
  * some functions have additional arguments (namely, array descriptors).
  *
- * Array outputs are returned in Fortran order; please see the Fortran source
- * for details.
+ * Array outputs are returned in Fortran order; see the Fortran source for more
+ * details.
  */
 
 /*
@@ -34,7 +34,7 @@
  *   NNODE - number of nodes (output)
  */
 extern void hypoct_build(
-  char *adap, char *intr, int *d, int *n, double x[], double siz[], int *occ,
+  char *adap, char *elem, int *d, int *n, double x[], double siz[], int *occ,
   int *lvlmax, double ext[], int *nlvl, int *nnode, int **lvlx, double rootx[],
   int xi[], int **xp, int **nodex
 );
@@ -72,8 +72,8 @@ extern void hypoct_geom(
  *   NILST - total number of nodes in interaction lists (output)
  */
 extern void hypoct_ilst(
-  int *nlvl, int *nnode, int **lvlx, int **nodex, int **chldp, int *nnbor,
-  int **nborp, int **nbori, int *nilst, int **ilsti, int **ilstp
+  int *nlvl, int *nnode, int **lvlx, int **xp, int **nodex, int **chldp,
+  int *nnbor, int **nborp, int **nbori, int *nilst, int **ilsti, int **ilstp
 );
 
 /*
@@ -85,8 +85,9 @@ extern void hypoct_ilst(
  *   NNBOR - total number of neighbors (output)
  */
 extern void hypoct_nbor(
-  int *d, int *nlvl, int *nnode, int **lvlx, int **xp, int **nodex, int **chldp,
-  int per[], int *nnbor, int **nbori, int **nborp
+  char *elem, int *d, int *nlvl, int *nnode, int **lvlx, int **xp, int **nodex,
+  int **chldp, double **l, double **ctr, int per[],
+  int *nnbor, int **nbori, int **nborp
 );
 
 /*
@@ -94,9 +95,10 @@ extern void hypoct_nbor(
  *
  * Additional arguments:
  *   NLVL  - tree depth     (input)
- *   NNODE - numbe of nodes (input)
+ *   NNODE - number of nodes (input)
  */
 extern void hypoct_search(
-  int *d, int *n, double x[], int *mlvl, int *nlvl, int *nnode, int **lvlx,
-  double rootx[], int **nodex, int **chldp, double **ctr, int trav[]
+  char *elem, int *d, int *n, double x[], double siz[], int *mlvl, int *nlvl,
+  int *nnode, int **lvlx, int **nodex, int **chldp, double **l, double **ctr,
+  int trav[]
 );

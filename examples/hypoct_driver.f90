@@ -1,5 +1,5 @@
 !*******************************************************************************
-!   Copyright (C) 2013 Kenneth L. Ho
+!   Copyright (C) 2013-2014 Kenneth L. Ho
 !
 !   This program is free software: you can redistribute it and/or modify it
 !   under the terms of the GNU General Public License as published by the Free
@@ -27,10 +27,10 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     build variables
-      character :: adap = 'a', intr = 'p'
-      integer :: d = 2, n = 2**20, occ = 16, lvlmax = -1
+      character :: adap = 'a', elem = 'p'
+      integer :: d = 2, n = 2**20, occ = 16, lvlmax = -1, m = 2**16
       integer, allocatable :: lvlx(:,:), xi(:), xp(:), nodex(:,:)
-      real*8, allocatable :: x(:,:), siz(:), ext(:), rootx(:,:)
+      real*8, allocatable :: x(:,:), siz(:), ext(:), rootx(:,:), y(:,:)
 
 !     geometry variables
       real*8, allocatable :: l(:,:), ctr(:,:)
@@ -74,7 +74,7 @@
 !     build tree
       print '(xa,$)', 'Building tree...             '
       call cpu_time(t0)
-      call hypoct_build(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
+      call hypoct_build(adap, elem, d, n, x, siz, occ, lvlmax, ext, &
                         lvlx, rootx, xi, xp, nodex)
       call cpu_time(t)
       mb = i2mb*(size(lvlx) + size(xi) + size(xp) + size(nodex)) &
@@ -104,7 +104,8 @@
       allocate(per(d))
       per = .false.
       call cpu_time(t0)
-      call hypoct_nbor(d, lvlx, xp, nodex, chldp, per, nbori, nborp)
+      call hypoct_nbor(elem, d, lvlx, xp, nodex, chldp, l, ctr, per, &
+                       nbori, nborp)
       call cpu_time(t)
       mb = i2mb*(size(nborp) + size(nbori))
       print 20, t - t0, mb
@@ -112,7 +113,7 @@
 !     get interaction lists
       print '(xa,$)', 'Getting interaction lists... '
       call cpu_time(t0)
-      call hypoct_ilst(lvlx, nodex, chldp, nbori, nborp, ilsti, ilstp)
+      call hypoct_ilst(lvlx, xp, nodex, chldp, nbori, nborp, ilsti, ilstp)
       call cpu_time(t)
       mb = i2mb*(size(ilstp) + size(ilsti))
       print 20, t - t0, mb
@@ -120,9 +121,12 @@
 !     search tree
       print '(xa,$)', 'Searching tree...            '
       nlvl = lvlx(2,0)
-      allocate(trav(n,0:nlvl))
+      allocate(trav(m,0:nlvl), y(d,m))
+      call random_number(y)
+      y = 2*y - 1
       call cpu_time(t0)
-      call hypoct_search(d, n, x, nlvl, lvlx, rootx, nodex, chldp, ctr, trav)
+      call hypoct_search(elem, d, m, y, siz, nlvl, lvlx, nodex, chldp, l, ctr, &
+                         trav)
       call cpu_time(t)
       mb = i2mb*size(trav)
       print 20, t - t0, mb

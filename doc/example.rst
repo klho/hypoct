@@ -73,10 +73,10 @@ To construct a triply periodic tree with unit cell extents of, say, 10, 2, and 2
 
 The periodicity of the interaction lists inherits from that of the neighbor list.
 
-Tree for Galerkin triangle code
--------------------------------
+Tree on triangles
+-----------------
 
-The following code demonstrates how to build a tree on triangles that is suitable for Galerkin computations::
+The following code demonstrates how to build a tree on triangles::
 
   # format for `vert`: vertex `i` of triangle `j` has coordinates `vert[:,i,j]`
   n = vert.shape[2]
@@ -90,15 +90,15 @@ The following code demonstrates how to build a tree on triangles that is suitabl
     diam[i] = max(vert[:,:,i].max(axis=1) - vert[:,:,i].min(axis=1))
 
   # build tree
-  tree = hypoct.Tree(cent, intr='g', siz=diam)
+  tree = hypoct.Tree(cent, elem='e', siz=diam)
 
-Changing plot styles for TreeVisualizer
-----------------------------------------
+Changing plot styles for TreeViewer
+-----------------------------------
 
-Plot styles for :meth:`hypoct.tools.TreeVisualizer.draw_interactive` can be changed by specifying :mod:`matplotlib`-type keywords. For example, using::
+Plot styles for :meth:`hypoct.tools.TreeViewer.draw_interactive` can be changed by specifying :mod:`matplotlib`-type keywords. For example, using::
 
-  from hypoct.tools import TreeVisualizer
-  view = TreeVisualizer(tree)
+  from hypoct.tools import TreeViewer
+  view = TreeViewer(tree)
   view.draw_interactive(node_alpha=0.2, point_c='g', nbor_color='y', ilst_color='r')
 
 sets the transparency level for the current node patch to 0.2, the color for points contained within the current node to green, the color of neighboring node patches to yellow, and the color of node patches in the interaction list to red.

@@ -7,11 +7,9 @@ hypoct contains routines for constructing and manipulating point hyperoctrees. I
 
 Special features include:
 
-- Support for general elements (e.g., triangles) by associating with each point (e.g., centroid) a size (e.g., diameter). Larger elements are assigned to larger nodes so as to enforce the well-separated condition for non-self non-neighbors.
+- Compatibility with general elements by associating with each point a size. Larger elements are assigned to larger nodes so as to enforce the well-separated condition for non-self non-neighbors. The effect of working with elements is that point distributions are now no longer strictly contained within each node but can extend slightly beyond it.
 
-- Compatibility with point-point, point-element (collocation/qualocation), and element-element (Galerkin) interactions.
-
-- Optimizations for non-uniform and high-dimensional data such as adaptive subdivision (of both nodes and levels) and pruning of empty leaves.
+- Optimizations for non-uniform and high-dimensional data such as adaptive subdivision and pruning of empty leaves. In particular, short dimensions are not bisected in order to keep nodes as hypercubic as possible.
 
 - Support for periodic domains.
 

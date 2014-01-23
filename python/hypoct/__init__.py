@@ -1,5 +1,5 @@
 #*******************************************************************************
-#   Copyright (C) 2013 Kenneth L. Ho
+#   Copyright (C) 2013-2014 Kenneth L. Ho
 #
 #   This program is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by the Free
@@ -31,36 +31,45 @@ class Tree:
   :type x: :class:`numpy.ndarray`
 
   :keyword adap:
-    Adaptivity setting: adaptive, uniform.
+    Adaptivity setting: adaptive (`'a'`), uniform (`'u'`). This specifies
+    whether nodes are divided adaptively or to a uniformly fine level.
   :type adap: {`'a'`, `'u'`}
 
-  :keyword intr:
-    Interaction type: point-point, point-element (collocation or qualocation),
-    element-element (Galerkin).
-  :type intr: {`'p'`, `'c'`, `'g'`}
+  :keyword elem:
+    Element type: point (`'p'`), element (`'e'`), sparse element (`'s'`). This
+    specifies whether the input points represent true points or general elements
+    (with sizes) that can extend beyond node boundaries. Larger elements are
+    assigned to larger nodes. If `elem = 'p'`, then `siz` is ignored. The
+    distinction between elements and sparse elements is that elements are
+    intended to interact densely with each other, whereas sparse elements
+    interact only with those which they overlap.
+  :type elem: {`'p'`, `'e'`, `'s'`}
 
   :keyword siz:
     Sizes associated with each point. If `siz` is a single float, then it is
-    automatically expanded into an appropriately sized constant array. Ignored
-    if `intr = 'p'`.
+    automatically expanded into an appropriately sized constant array. Not
+    accessed if `elem = 'p'`.
   :type siz: :class:`numpy.ndarray`
 
   :keyword occ:
-    Maximum leaf occupancy.
+    Maximum leaf occupancy. Requires `occ > 0`.
   :type occ: int
 
   :keyword lvlmax:
-    Maximum tree depth. No maximum if `lvlmax < 0`.
+    Maximum tree depth. The root is defined to have level zero. No maximum if
+    `lvlmax < 0`.
   :type lvlmax: int
 
   :keyword ext:
     Extent of root node. If `ext[i] <= 0`, then the extent in dimension `i` is
-    calculated from the data. If `ext` is a single float, then it is
-    automatically expanded into an appropriately sized constant array.
+    calculated from the data. Its primary use is to force nodes to conform to a
+    a specified geometry (see :meth:`find_neighbors`). If `ext` is a single
+    float, then it is automatically expanded into an appropriately sized
+    constant array.
   :type ext: :class:`numpy.ndarray`
   """
 
-  def __init__(self, x, adap='a', intr='p', siz=0, occ=1, lvlmax=-1, ext=0):
+  def __init__(self, x, adap='a', elem='p', siz=0, occ=1, lvlmax=-1, ext=0):
     """
     Initialize.
     """
@@ -73,7 +82,7 @@ class Tree:
     if (ext.size == 1): ext = ext * np.ones(d)
 
     # call Fortran routine
-    self.rootx, self.xi = _hypoct.hypoct_python_build(adap, intr, self.x, siz,
+    self.rootx, self.xi = _hypoct.hypoct_python_build(adap, elem, self.x, siz,
                                                       occ, lvlmax, ext)
     self.lvlx  = np.array(_hypoct.lvlx)
     self.xp    = np.array(_hypoct.xp)
@@ -84,7 +93,7 @@ class Tree:
 
     # set properties
     self.properties = {'adap':   adap,
-                       'intr':   intr,
+                       'elem':   elem,
                         'siz':    siz,
                         'occ':    occ,
                      'lvlmax': lvlmax,
@@ -126,25 +135,50 @@ class Tree:
     """
     Find neighbors.
 
-    The neighbors of a given node are those nodes at the same level or higher
-    that are nonempty and within one of the nodes' sizes of each other. A node
-    is not considered its own neighbor.
+    Let the extension of a node be the spatial region corresponding to all
+    possible point distributions belonging to that node. Then the neighbors of a
+    given node consist of:
+
+    - All nodes at the same level whose extensions are separated from that of
+      the given node by less than the size of the given node's extension.
+
+    - All non-empty nodes at a higher level (parent or coarser) whose extensions
+      are separated from that of the given node by less than the size of the
+      given node's extension.
+
+    In the special case that each node contains only points and not elements
+    (i.e., `elem = 'p'`), this reduces simply to:
+
+    - All nodes at the same level immediately adjoining the given node.
+
+    - All non-empty nodes at a higher level (parent or coarser) immediately
+      adjoining the given node.
+
+    A node is not considered its own neighbor.
+
+    This routine requires that the child and geometry data have already been
+    generated. If this is not the case, then this is done automatically.
+
+    See :meth:`generate_child_data` and :meth:`generate_geometry_data`.
 
     :param per:
       Periodicity of root note. The domain is periodic in dimension `i` if
-      `per[i] = True`. Use `ext` in :meth:`Tree` to control the extent of
-      the root.
+      `per[i] = True`. If `per` is a single bool, then it is automatically
+      expanded into an appropriately sized constant array. Use `ext` in
+      :meth:`Tree` to control the extent of the root.
     :type per: :class:`numpy.ndarray`
     """
-    # generate child data if nonexistent
+    # generate child and geometry data if nonexistent
     if not self._flags['chld']: self.generate_child_data()
+    if not self._flags['geom']: self.generate_geometry_data()
 
     # process inputs
     per = np.asfortranarray(per, dtype='int32')
     if (per.size == 1): per = per * np.ones(self.x.shape[0], dtype='int32')
 
     # call Fortran routine
-    _hypoct.hypoct_python_nbor(self.lvlx, self.xp, self.nodex, self.chldp, per)
+    _hypoct.hypoct_python_nbor(self.properties['elem'], self.lvlx, self.xp,
+                               self.nodex, self.chldp, self.l, self.ctr, per)
     self.nbori = np.array(_hypoct.nbori)
     self.nborp = np.array(_hypoct.nborp)
     _hypoct.nborp = None
@@ -161,9 +195,16 @@ class Tree:
     """
     Get interaction lists.
 
-    The interaction list of a given node consists of those nodes at the same
-    level that are the children of its parent's neighbors but which are not
-    themselves neighbors of the node.
+    The interaction list of a given node consists of:
+
+    - All nodes at the same level that are children of the neighbors of the
+      node's parent but not neighbors of the node itself.
+
+    - All non-empty nodes at a coarser level (parent or above) that are
+      neighbors of the node's parent but not neighbors of the node itself.
+
+    This routine requires that the neighbor data have already been generated. If
+    this is not the case, then this is done automatically (at default settings).
 
     See :meth:`find_neighbors`.
     """
@@ -171,7 +212,7 @@ class Tree:
     if not self._flags['nbor']: self.find_neighbors()
 
     # call Fortran routine
-    _hypoct.hypoct_python_ilst(self.lvlx, self.nodex, self.chldp,
+    _hypoct.hypoct_python_ilst(self.lvlx, self.xp, self.nodex, self.chldp,
                                self.nbori, self.nborp)
     self.ilsti = np.array(_hypoct.ilsti)
     self.ilstp = np.array(_hypoct.ilstp)
@@ -181,13 +222,24 @@ class Tree:
     # set flags
     self._flags['ilst'] = True
 
-  def search(self, x, mlvl=-1):
+  def search(self, x, siz=0, mlvl=-1):
     """
     Search hyperoctree.
+
+    This routine requires that the child and geometry data have already been
+    generated. If this is not the case, then this is done automatically.
+
+    See :meth:`generate_child_data` and :meth:`generate_geometry_data`.
 
     :param x:
       Point coordinates, where the coordinate of point `i` is `x[:,i]`.
     :type x: :class:`numpy.ndarray`
+
+    :keyword siz:
+      Sizes associated with each point. If `siz` is a single float, then it is
+      automatically expanded into an appropriately sized constant array. Not
+      accessed if `elem = 'p'`. Larger elements are contained in larger nodes.
+    :type siz: :class:`numpy.ndarray`
 
     :keyword mlvl:
       Maximum tree depth to search. Defaults to full tree depth if `mlvl < 0`.
@@ -198,15 +250,17 @@ class Tree:
       `trav[i,j]`; if no such node exists, then `trav[i,j] = 0`.
     :rtype: :class:`numpy.ndarray`
     """
-    # generate child data if nonexistent
+    # generate child and geometry data if nonexistent
     if not self._flags['chld']: self.generate_child_data()
-
-    # generate geometry data if nonexistent
     if not self._flags['geom']: self.generate_geometry_data()
 
     # process inputs
+    siz = np.asfortranarray(siz)
+    n = x.shape[1]
+    if (siz.size == 1): siz = siz * np.ones(n)
     if mlvl < 0: mlvl = self.lvlx[1,0]
 
     # call Fortran routine
-    return _hypoct.hypoct_python_search(x, mlvl, self.lvlx, self.rootx,
-                                        self.nodex, self.chldp, self.ctr)
+    return _hypoct.hypoct_python_search(self.properties['elem'], x, siz, mlvl,
+                                        self.lvlx, self.nodex, self.chldp,
+                                        self.l, self.ctr)

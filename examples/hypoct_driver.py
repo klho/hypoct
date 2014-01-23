@@ -1,5 +1,5 @@
 #*******************************************************************************
-#   Copyright (C) 2013 Kenneth L. Ho
+#   Copyright (C) 2013-2014 Kenneth L. Ho
 #
 #   This program is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by the Free
@@ -81,8 +81,11 @@ if __name__ == '__main__':
 
   # search tree
   print "Searching tree...           ",
+  m = 2**16;
+  y = np.random.rand(2, m)
+  y = 2*y - 1
   t0 = time.clock()
-  trav = tree.search(x)
+  trav = tree.search(y)
   t = time.clock() - t0
   mb = 1e-6*trav.nbytes
   print fmt % (t, mb)

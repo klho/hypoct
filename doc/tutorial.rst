@@ -64,20 +64,20 @@ It is also possible to set the maximum tree depth explicitly using the ``lvlmax`
 
 >>> tree = hypoct.Tree(x, lvlmax=3)
 
-The root is denoted as level zero. The default is ``lvlmax=-1``, which denotes no maximum depth. Both ``occ`` and ``lvlmax`` can be employed together, with ``lvlmax`` setting a hard limit on the tree.
+The root is denoted as level zero. The default is ``lvlmax=-1``, which specifies no maximum depth. Both ``occ`` and ``lvlmax`` can be employed together, with ``lvlmax`` setting a hard limit on the tree.
 
-Element interactions
-....................
+Element setting
+...............
 
-To treat the points as elements, each with a size, first create an array containing the size of each point, then build the tree using the ``siz`` keyword. Be sure also to specify whether the elements are meant to interact in a point-element (collocation/qualocation) or element-element (Galerkin) fashion as otherwise the size setting is ignored. For instance, to consider the points as elements each of size 0.1 interacting as in a collocation method, write::
+To treat the points as elements, each with a size, first create an array containing the size of each point, then build the tree using the ``elem`` and ``siz`` keywords. For instance, to consider the points as elements each of size 0.1, write::
 
->>> tree = hypoct.Tree(x, intr='c', siz=0.1)
+>>> tree = hypoct.Tree(x, elem='e', siz=0.1)
 
-where we have used the shorthand that if ``siz`` is a single number, then it is automatically expanded into an array of the appropriate size. Similarly, to specify a Galerkin-type interaction, write::
+where we have used the shorthand that if ``siz`` is a single number, then it is automatically expanded into an array of the appropriate size. Similarly, to build a tree on "sparse elements", write::
 
->>> tree =  hypoct.Tree(x, intr='g', siz=0.1)
+>>> tree =  hypoct.Tree(x, elem='s', siz=0.1)
 
-The defaults are ``intr='p'``, corresponding to point-point interactions, and ``siz=0``.
+The defaults are ``elem='p'``, corresponding to points, and ``siz=0``.
 
 Root extent
 ...........
@@ -86,7 +86,7 @@ The extent of the root node can be specified using the ``ext`` keyword, e.g.,
 
 >>> tree = hypoct.Tree(x, ext=[10, 0])
 
-This tells the code to set the length of the root along the first dimension to 10; its length along the second dimension is calculated from the data (the corresponding entry is nonpositive). This is often useful if there is some external parameter governing the problem geometry, for example, periodicity conditions. Like ``siz``, ``ext`` can also be given as a single number, in which case it is automatically expanded as appropriate. The default is ``ext=0``.
+This tells the code to set the length of the root along the first dimension to 10; its length along the second dimension is calculated from the data (since the corresponding entry is nonpositive). This is often useful if there is some external parameter governing the problem geometry, for example, periodicity conditions. Like ``siz``, ``ext`` can also be given as a single number, in which case it is automatically expanded as appropriate. The default is ``ext=0``.
 
 Remarks
 .......
@@ -101,12 +101,12 @@ gives::
   array([[  0,   1,   5,  17,  45,  97, 177, 193],
          [  6,   0,   3,   3,   3,   3,   3,   3]], dtype=int32)
 
-which indicates that the tree has 6 levels (beyond the root) with 193 nodes in total. See the Fortran source code for details.
+which indicates that the tree has 6 levels (beyond the root at level 0) with 193 nodes in total. See the Fortran source code for details.
 
 Generating auxiliary data
 -------------------------
 
-The base tree output is stored in a rather spartan manner; it contains only the bare minimum necessary to reconstruct the data for the entire tree. This is not always convenient and it is sometimes useful to have the data in a more easily accessible form. For instance, the base tree representation contains only parent and child identifier information that only really allows you to traverse a tree from the bottom up. To traverse a tree from the top down, we have to, in effect, generate child pointers, which we can do via::
+The base tree output is stored in a rather spartan manner; it contains only the bare minimum necessary to reconstruct the data for the entire tree. This is not always convenient and it is sometimes useful to have the data in a more easily accessible form. For instance, the base tree representation contains only parent and child identifier information that only really allows you to traverse a tree from the bottom up. To traverse a tree from the top down, we have to generate child pointers, which we can do via::
 
 >>> tree.generate_child_data()
 
@@ -135,10 +135,13 @@ for double periodicity. The default is ``per=False``.
 
 The method :meth:`hypoct.Tree.find_neighbors` requires that the child data from :meth:`hypoct.Tree.generate_child_data` have already been generated; if this is not the case, then this is done automatically.
 
+.. note::
+   Recall that neighbors are defined differently for points vs. elements as described briefly in :doc:`intro`.
+
 Getting interaction lists
 -------------------------
 
-Recall that interaction lists are often utilized in fast multipole-type algorithms to systematically cover the far field. To get interaction lists for all nodes, type::
+Interaction lists are often used in fast multipole-type algorithms to systematically cover the far field. To get interaction lists for all nodes, type::
 
 >>> tree.get_interaction_lists()
 
@@ -152,6 +155,8 @@ It is often also useful to be able to search the tree for a given set of points.
 >>> trav = tree.search(x)
 
 where ``x`` is the set of points to search for. The output ``trav`` is an array that records the tree traversal history for each point: the node containing the point ``x[:,i]`` at level ``j`` has index ``trav[i,j]``; if no such node exists, then ``trav[i,j] = 0``. By default, the tree is traversed fully from top to bottom. To limit the maximum tree depth searched, use the keyword ``mlvl``.
+
+If we have a tree on elements, then we can also attach a size to each point using the keyword ``siz``. Each node in the tree traversal array, if it exists, must fully contain the point based on its size. The default is ``siz=0``.
 
 This command requires that child and geometry data have already been generated; if this is not the case, then this is done automatically.
 
@@ -176,13 +181,16 @@ A complete example program for building a tree and generating all auxiliary data
 
 This is a slightly modified and abridged version of the driver program ``examples/hypoct_driver.py``.
 
-Visualizing trees in 2D
------------------------
+Viewing trees in 1D and 2D
+--------------------------
 
-Trees in 2D can be viewed graphically using the :class:`hypoct.tools.TreeVisualizer` class. To use the viewer, type::
+Trees in 1D and 2D can be viewed graphically using the :class:`hypoct.tools.TreeViewer` class. To use the viewer, type::
 
->>> from hypoct.tools import TreeVisualizer
->>> view = TreeVisualizer(tree)
+>>> from hypoct.tools import TreeViewer
+>>> view = TreeViewer(tree)
 >>> view.draw_interactive()
 
 This brings up an interactive session where each node in the tree is highlighted in turn, displaying its geometry, contained points, and neighbor and interaction list information, if available. Press ``Enter`` to step through the tree. All plot options can be controlled using :mod:`matplotlib`-style keywords.
+
+.. note::
+   The :class:`hypoct.tools.TreeViewer` class was written originally for 2D trees. It was extended to 1D trees by trivially lifting into 2D.

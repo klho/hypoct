@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2013 Kenneth L. Ho
+ * Copyright (C) 2013-2014 Kenneth L. Ho
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -34,13 +34,13 @@ int main() {
   int d = 2, n = pow(2, 20);
   double  *x = (double *) malloc(d*n*sizeof(double)),
         *siz = (double *) malloc(  n*sizeof(double)), ext[d];
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < n; ++i) {
     theta = 2*pi*i / n;
     x[2*i  ] = cos(theta);
     x[2*i+1] = sin(theta);
     siz[i] = 0;
   }
-  for (i = 0; i < d; i++) { ext[i] = 0; }
+  for (i = 0; i < d; ++i) { ext[i] = 0; }
 
   // print input summary
   printf("\
@@ -51,12 +51,12 @@ n
 
   // build tree
   printf("Building tree...             ");
-  char adap = 'a', intr = 'p';
+  char adap = 'a', elem = 'p';
   int occ = 16, lvlmax = -1, nlvl, nnode, *lvlx,
       *xi = (int *) malloc(n*sizeof(int)), *xp, *nodex;
   double rootx[d][2];
   t0 = clock();
-  hypoct_build(&adap, &intr, &d, &n, x, siz, &occ, &lvlmax, ext,
+  hypoct_build(&adap, &elem, &d, &n, x, siz, &occ, &lvlmax, ext,
                &nlvl, &nnode, &lvlx, *rootx, xi, &xp, &nodex);
   t = clock();
   mb = 1e-6*(sizeof(int)*(2*(nlvl + 2) + n + 3*nnode + 1) +
@@ -84,10 +84,10 @@ n
   // find neighbors
   printf("Finding neighbors...         ");
   int per[d], nnbor, *nborp, *nbori;
-  for (i = 0; i < d; i++) { per[i] = 0; }
+  for (i = 0; i < d; ++i) { per[i] = 0; }
   t0 = clock();
-  hypoct_nbor(&d, &nlvl, &nnode, &lvlx, &xp, &nodex, &chldp, per,
-              &nnbor, &nbori, &nborp);
+  hypoct_nbor(&elem, &d, &nlvl, &nnode, &lvlx, &xp, &nodex, &chldp, &l, &ctr,
+              per, &nnbor, &nbori, &nborp);
   t = clock();
   mb = 1e-6*sizeof(int)*(nnode + 1 + nnbor);
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
@@ -96,7 +96,7 @@ n
   printf("Getting interaction lists... ");
   int nilst, *ilstp, *ilsti;
   t0 = clock();
-  hypoct_ilst(&nlvl, &nnode, &lvlx, &nodex, &chldp, &nnbor, &nbori, &nborp,
+  hypoct_ilst(&nlvl, &nnode, &lvlx, &xp, &nodex, &chldp, &nnbor, &nbori, &nborp,
               &nilst, &ilsti, &ilstp);
   t = clock();
   mb = 1e-6*sizeof(int)*(nnode + 1 + nilst);
@@ -104,12 +104,17 @@ n
 
   // search tree
   printf("Searching tree...            ");
-  int *trav = (int *) malloc(n*(nlvl + 1)*sizeof(int));
+  int m = pow(2, 16), *trav = (int *) malloc(m*(nlvl + 1)*sizeof(int));
+  double *y = (double *) malloc(d*m*sizeof(double));
+  for (i = 0; i < m; ++i) {
+    y[2*i  ] = 2*((double)rand() / (double)RAND_MAX) - 1;
+    y[2*i+1] = 2*((double)rand() / (double)RAND_MAX) - 1;
+  }
   t0 = clock();
-  hypoct_search(&d, &n, x, &nlvl, &nlvl, &nnode, &lvlx, *rootx, &nodex, &chldp,
-                &ctr, trav);
+  hypoct_search(&elem, &d, &m, y, siz, &nlvl, &nlvl, &nnode, &lvlx, &nodex,
+                &chldp, &l, &ctr, trav);
   t = clock();
-  mb = 1e-6*sizeof(int)*(n*(nlvl + 1));
+  mb = 1e-6*sizeof(int)*(m*(nlvl + 1));
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
   // print output summary
@@ -136,6 +141,8 @@ nlvl, nnode, nborp[nnode], ilstp[nnode]
   free(nbori);
   free(ilstp);
   free(ilsti);
+  free( trav);
+  free(    y);
 
   return 0;
 }

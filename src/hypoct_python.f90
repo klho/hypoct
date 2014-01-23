@@ -1,5 +1,5 @@
 !*******************************************************************************
-!   Copyright (C) 2013 Kenneth L. Ho
+!   Copyright (C) 2013-2014 Kenneth L. Ho
 !
 !   This program is free software: you can redistribute it and/or modify it
 !   under the terms of the GNU General Public License as published by the Free
@@ -20,7 +20,8 @@
 !*******************************************************************************
 !   HYPOCT_PYTHON - Python wrapper for HYPOCT
 !
-!   This module is part of the Python interface to HYPOCT.
+!   This module is part of the Python interface to HYPOCT. See the Python module
+!   for more details.
 !*******************************************************************************
 
      use hypoct
@@ -34,7 +35,7 @@
     contains
 
 !*******************************************************************************
-     subroutine hypoct_python_build(adap, intr, d, n, x, siz, occ, lvlmax, &
+     subroutine hypoct_python_build(adap, elem, d, n, x, siz, occ, lvlmax, &
                                     ext, rootx, xi)
 !*******************************************************************************
 !    Python wrapper for HYPOCT_BUILD.
@@ -44,14 +45,14 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      character, intent(in) :: adap, intr
+      character, intent(in) :: adap, elem
       integer, intent(in) :: d, n, occ, lvlmax
       real*8, intent(in) :: x(d,n), siz(n), ext(d)
       integer, intent(out) :: xi(n)
       real*8, intent(out) :: rootx(2,d)
 !     ==========================================================================
 
-      call hypoct_build(adap, intr, d, n, x, siz, occ, lvlmax, ext, &
+      call hypoct_build(adap, elem, d, n, x, siz, occ, lvlmax, ext, &
                         lvlx, rootx, xi, xp, nodex)
 
      end subroutine
@@ -92,7 +93,7 @@
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_python_ilst(lvlx, nodex, chldp, nbori, nborp)
+     subroutine hypoct_python_ilst(lvlx, xp, nodex, chldp, nbori, nborp)
 !*******************************************************************************
 !    Python wrapper for HYPOCT_ILST.
 !*******************************************************************************
@@ -101,16 +102,16 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
-      integer, intent(in) :: lvlx(2,0:*), nodex(2,*), chldp(*), nbori(*), &
-                             nborp(*)
+      integer, intent(in) :: lvlx(2,0:*), xp(*), nodex(2,*), chldp(*), &
+                             nbori(*), nborp(*)
 !     ==========================================================================
 
-      call hypoct_ilst(lvlx, nodex, chldp, nbori, nborp, ilsti, ilstp)
+      call hypoct_ilst(lvlx, xp, nodex, chldp, nbori, nborp, ilsti, ilstp)
 
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_python_nbor(d, lvlx, xp, nodex, chldp, per)
+     subroutine hypoct_python_nbor(elem, d, lvlx, xp, nodex, chldp, l, ctr, per)
 !*******************************************************************************
 !    Python wrapper for HYPOCT_NBOR.
 !*******************************************************************************
@@ -119,17 +120,20 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
+      character, intent(in) :: elem
       integer, intent(in) :: d, lvlx(2,0:*), xp(*), nodex(2,*), chldp(*)
+      real*8, intent(in) :: l(d,*), ctr(d,*)
       logical, intent(in) :: per(d)
 !     ==========================================================================
 
-      call hypoct_nbor(d, lvlx, xp, nodex, chldp, per, nbori, nborp)
+      call hypoct_nbor(elem, d, lvlx, xp, nodex, chldp, l, ctr, per, &
+                       nbori, nborp)
 
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_python_search(d, n, x, mlvl, lvlx, rootx, nodex, chldp, &
-                                     ctr, trav)
+     subroutine hypoct_python_search(elem, d, n, x, siz, mlvl, lvlx, nodex, &
+                                     chldp, l, ctr, trav)
 !*******************************************************************************
 !    Python wrapper for HYPOCT_SEARCH.
 !*******************************************************************************
@@ -138,12 +142,14 @@
 !     variable declarations
 !     --------------------------------------------------------------------------
 !     arguments
+      character, intent(in) :: elem
       integer, intent(in) :: d, n, mlvl, lvlx(2,0:*), nodex(2,*), chldp(*)
-      real*8, intent(in) :: x(d,n), rootx(2,d), ctr(d,*)
+      real*8, intent(in) :: x(d,n), siz(n), l(d,0:*), ctr(d,*)
       integer, intent(out) :: trav(n,0:mlvl)
 !     ==========================================================================
 
-      call hypoct_search(d, n, x, mlvl, lvlx, rootx, nodex, chldp, ctr, trav)
+      call hypoct_search(elem, d, n, x, siz, mlvl, lvlx, nodex, chldp, l, ctr, &
+                         trav)
 
      end subroutine
 

@@ -1,5 +1,5 @@
 #*******************************************************************************
-#   Copyright (C) 2013 Kenneth L. Ho
+#   Copyright (C) 2013-2014 Kenneth L. Ho
 #
 #   This program is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by the Free
@@ -24,9 +24,9 @@ from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 import numpy as np
 
-class TreeVisualizer:
+class TreeViewer:
   """
-  Visualize 2D hyperoctrees.
+  View binary and quadtrees (1D and 2D hyperoctrees).
 
   :param tree:
     Hyperoctree.
@@ -38,9 +38,16 @@ class TreeVisualizer:
     Initialize.
     """
     self.tree = tree
-    if self.tree.x.shape[0] != 2:
-      raise NotImplementedError("currently requires D = 2")
+    d = self.tree.x.shape[0]
+    if not (d == 1 or d == 2):
+      raise NotImplementedError("requires D = 1 or 2")
     if not self.tree._flags['geom']: tree.generate_geometry_data()
+
+    # lift 1D tree into 2D
+    if d == 1:
+      self.tree.x   = np.vstack([self.tree.x,   np.zeros(self.tree.x.size)])
+      self.tree.l   = np.vstack([self.tree.l,   self.tree.l])
+      self.tree.ctr = np.vstack([self.tree.ctr, np.zeros(self.tree.ctr.size)])
 
   def draw_base(self, c='k', **kwargs):
     """
@@ -68,9 +75,9 @@ class TreeVisualizer:
     Points are drawn using :func:`matplotlib.pyplot.scatter`.
 
     All keyword arguments prefaced with `'node_'` are passed to the node drawing
-    routine without the prefix, and, similarly all arguments prefixed with
-    `'point_'` are passed to the point drawing routine without the prefix. For
-    example, setting `node_color='r'` and `point_c='b'` passes the keyword
+    routine with the prefix stripped, and, similarly all arguments prefixed with
+    `'point_'` are passed to the point drawing routine with the prefix stripped.
+    For example, setting `node_color='r'` and `point_c='b'` passes the keyword
     argument `color='r'` to the node drawer and `c='b'` to the point drawer.
 
     :param index:
@@ -134,7 +141,7 @@ class TreeVisualizer:
     prefaced with `'ilst_'` are passed to :meth:`draw_node` when drawing each
     node in the interaction list.
 
-    See :meth:`draw_base` and :meth:`draw_node` for details.
+    See :meth:`draw_base` and :meth:`draw_node`.
 
     :keyword draw_neighbors:
       Whether to draw neighbors.
@@ -204,7 +211,7 @@ class TreeVisualizer:
         plt.axis(axis)
         plt.draw()
 
-        # format descriptor string
+        # format node descriptor
         s = "Node %d/%d:\n" % (j+1, self.tree.lvlx[0,-1])
         s += "  center:\n    %s\n" % self.tree.ctr[:,j]
         s += "  extent:\n    %s\n" % self.tree.  l[:,i]
