@@ -37,7 +37,7 @@ We fix this problem by adopting a slightly more complex "two-over" neighbor defi
 .. note::
    The simple neighbor definition above characterizes the case when two nodes are at the same level. When one node is larger than the other, the situation becomes more complicated---but this, too, can be dealt with.
 
-There is also an additional facility for elements that interact only sparsely, i.e., by overlap. This is suitable for, e.g., a finite element discretization of a partial differential equation and substantially reduces the extent of the near field as compared with general 'dense' elements.
+There is also an additional facility for elements that interact only sparsely, i.e., by overlap. This is suitable for, e.g., a finite element discretization of a partial differential equation. In this case, the neighbors of a given node consist only of those nodes whose halo extensions overlap with its own halo extension. This substantially reduces the extent of the near field as compared with general 'dense' elements.
 
 Periodic domains
 ................
@@ -63,19 +63,27 @@ Algorithmic overview
 
 We have already discussed the tree construction process above. Briefly, to review, it consists of recursively subdividing nodes following a top-down sweep, alternately deciding which nodes to divide and then which points within those nodes to hold from further subdivision.
 
-Finding neighbors similarly involves a top-down sweep. We first initialize the neighbors at the top two levels as a base case, then at each lower level search for the neighbors of each node among the children of its parent's neighbors. This hence nests the neighbor search hierarchically and results in good performance. Here, the neighbors of a given node are defined to consist of:
+Finding neighbors similarly involves a top-down sweep. We first initialize the neighbors at the top two levels as a base case, then at each lower level search for the neighbors of each node among the children of its parent's neighbors. This hence nests the neighbor search hierarchically and results in good performance.
 
-- All nodes at the same level whose 'halo' extensions are separated from the extension of the given node by less than the size of the given node's extension.
+For points, the neighbors of a given node consist of:
 
-- All non-empty nodes at a higher level (parent or coarser) whose extensions are separated from the extension of the given node by less than the size of the given node's extension.
+- All nodes at the same level immediately adjoining it.
 
-In the event that we work only with points and not elements, this reduces simply to:
+- All non-empty nodes at a higher level (parent or coarser) immediately adjoining it.
 
-- All nodes at the same level immediately adjoining the given node.
+For elements, the neighbors of a given node consist of:
 
-- All non-empty nodes at a higher level (parent or coarser) immediately adjoining the given node.
+- All nodes at the same level whose halo extensions are separated from its own extension by less than its extension's size.
 
-A node is not considered its own neighbor.
+- All non-empty nodes at a higher level (parent or coarser) whose halo extensions are separated its own extension by less than its extension's size.
+
+Finally, for sparse elements, the neighbors consist of:
+
+- All nodes at the same level immediately adjoining it.
+
+- All non-empty nodes at a higher level (parent or coarser) whose halo extensions overlap with its own extension.
+
+In all cases, a node is not considered its own neighbor.
 
 For FMM codes, it is also useful to have access to the interaction list of a node, which consists of:
 

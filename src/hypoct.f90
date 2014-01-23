@@ -535,26 +535,34 @@
 !*******************************************************************************
 !    Find neighbors.
 !
-!    Let the extension of a node be the spatial region corresponding to all
-!    possible point distributions belonging to that node. Then the neighbors of
-!    a given node consist of:
+!    For points (ELEM = 'p'), the neighbors of a given node consist of:
 !
-!    - All nodes at the same level whose extensions are separated from that of
-!      the given node by less than the size of the given node's extension.
-!
-!    - All non-empty nodes at a higher level (parent or coarser) whose
-!      extensions are separated from that of the given node by less than the
-!      size of the given node's extension.
-!
-!    In the special case that each node contains only points and not elements
-!    (i.e., ELEM = 'p'), this reduces simply to:
-!
-!    - All nodes at the same level immediately adjoining the given node.
+!    - All nodes at the same level immediately adjoining it.
 !
 !    - All non-empty nodes at a higher level (parent or coarser) immediately
-!      adjoining the given node.
+!      adjoining it.
 !
-!    A node is not considered its own neighbor.
+!    For elements and sparse elements (ELEM = 'e' or 's'), first let the
+!    extension of a node be the spatial region corresponding to all possible
+!    point distributions belonging to that node.
+!
+!    Then for elements (ELEM = 'e'), the neighbors of a given node consist of:
+!
+!    - All nodes at the same level whose extensions are separated from its own
+!      extension by less than its extension's size.
+!
+!    - All non-empty nodes at a higher level (parent or coarser) whose
+!      extensions are separated its own extension by less than its extension's
+!      size.
+!
+!    Finally, for sparse elements (ELEM = 's'), the neighbors consist of:
+!
+!    - All nodes at the same level immediately adjoining it.
+!
+!    - All non-empty nodes at a higher level (parent or coarser) whose
+!      extensions overlap with its own extension.
+!
+!    In all cases, a node is not considered its own neighbor.
 !
 !    Arguments
 !    =========
