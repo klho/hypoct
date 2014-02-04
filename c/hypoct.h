@@ -34,9 +34,9 @@
  *   NNODE - number of nodes (output)
  */
 extern void hypoct_build(
-  char *adap, char *elem, int *d, int *n, double x[], double siz[], int *occ,
-  int *lvlmax, double ext[], int *nlvl, int *nnode, int **lvlx, double rootx[],
-  int xi[], int **xp, int **nodex
+  char *adap, char *elem, int *d, int *n, double *x, double *siz, int *occ,
+  int *lvlmax, double *ext, int *nlvl, int *nnode, int **lvlx, double *root,
+  int *xi, int **xp, int **nodex
 );
 
 /*
@@ -58,7 +58,7 @@ extern void hypoct_chld(
  *   NNODE - number of nodes (input)
  */
 extern void hypoct_geom(
-  int *d, int *nlvl, int *nnode, int **lvlx, double rootx[], int **nodex,
+  int *d, int *nlvl, int *nnode, int **lvlx, double *rootx, int **nodex,
   double **l, double **ctr
 );
 
@@ -86,7 +86,7 @@ extern void hypoct_ilst(
  */
 extern void hypoct_nbor(
   char *elem, int *d, int *nlvl, int *nnode, int **lvlx, int **xp, int **nodex,
-  int **chldp, double **l, double **ctr, int per[],
+  int **chldp, double **l, double **ctr, int *per,
   int *nnbor, int **nbori, int **nborp
 );
 
@@ -98,7 +98,7 @@ extern void hypoct_nbor(
  *   NNODE - number of nodes (input)
  */
 extern void hypoct_search(
-  char *elem, int *d, int *n, double x[], double siz[], int *mlvl, int *nlvl,
+  char *elem, int *d, int *n, double *x, double *siz, int *mlvl, int *nlvl,
   int *nnode, int **lvlx, int **nodex, int **chldp, double **l, double **ctr,
-  int trav[]
+  int *trav
 );
