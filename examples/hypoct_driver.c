@@ -32,8 +32,8 @@ int main() {
 
   // set inputs (allocate on heap for large arrays)
   int d = 2, n = pow(2, 20);
-  double  *x = (double *) malloc(d*n*sizeof(double)),
-        *siz = (double *) malloc(  n*sizeof(double)), ext[d];
+  double  *x = (double *)malloc(d*n*sizeof(double)),
+        *siz = (double *)malloc(  n*sizeof(double)), ext[d];
   for (i = 0; i < n; ++i) {
     theta = 2*pi*i / n;
     x[2*i  ] = cos(theta);
@@ -52,13 +52,14 @@ n
   // build tree
   printf("Building tree...             ");
   char adap = 'a', elem = 'p';
-  int occ = 16, lvlmax = -1, nlvl, nnode, *lvlx,
-      *xi = (int *) malloc(n*sizeof(int)), *xp, *nodex;
-  double rootx[d][2];
+  int occ = 16, lvlmax = -1, *lvlx,
+      *xi = (int *)malloc(n*sizeof(int)), *xp, *nodex;
+  double rootx[2*d];
   t0 = clock();
   hypoct_build(&adap, &elem, &d, &n, x, siz, &occ, &lvlmax, ext,
-               &nlvl, &nnode, &lvlx, *rootx, xi, &xp, &nodex);
+               &lvlx, rootx, xi, &xp, &nodex);
   t = clock();
+  int nlvl = lvlx[1], nnode = lvlx[2*(nlvl + 1)];
   mb = 1e-6*(sizeof(int)*(2*(nlvl + 2) + n + 3*nnode + 1) +
              sizeof(double)*(2*d));
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
@@ -67,7 +68,7 @@ n
   printf("Generating child data...     ");
   int *chldp;
   t0 = clock();
-  hypoct_chld(&nlvl, &nnode, &lvlx, &nodex, &chldp);
+  hypoct_chld(lvlx, nodex, &chldp);
   t = clock();
   mb = 1e-6*sizeof(int)*(nnode + 1);
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
@@ -76,29 +77,29 @@ n
   printf("Generating geometry data...  ");
   double *l, *ctr;
   t0 = clock();
-  hypoct_geom(&d, &nlvl, &nnode, &lvlx, *rootx, &nodex, &l, &ctr);
+  hypoct_geom(&d, lvlx, rootx, nodex, &l, &ctr);
   t = clock();
   mb = 1e-6*sizeof(double)*(2*nlvl + 2*nnode);
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
   // find neighbors
   printf("Finding neighbors...         ");
-  int per[d], nnbor, *nborp, *nbori;
+  int per[d], *nborp, *nbori;
   for (i = 0; i < d; ++i) { per[i] = 0; }
   t0 = clock();
-  hypoct_nbor(&elem, &d, &nlvl, &nnode, &lvlx, &xp, &nodex, &chldp, &l, &ctr,
-              per, &nnbor, &nbori, &nborp);
+  hypoct_nbor(&elem, &d, lvlx, xp, nodex, chldp, l, ctr, per, &nbori, &nborp);
   t = clock();
+  int nnbor = nborp[nnode];
   mb = 1e-6*sizeof(int)*(nnode + 1 + nnbor);
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
   // get interaction lists
   printf("Getting interaction lists... ");
-  int nilst, *ilstp, *ilsti;
+  int *ilstp, *ilsti;
   t0 = clock();
-  hypoct_ilst(&nlvl, &nnode, &lvlx, &xp, &nodex, &chldp, &nnbor, &nbori, &nborp,
-              &nilst, &ilsti, &ilstp);
+  hypoct_ilst(lvlx, xp, nodex, chldp, nbori, nborp, &ilsti, &ilstp);
   t = clock();
+  int nilst = ilstp[nnode];
   mb = 1e-6*sizeof(int)*(nnode + 1 + nilst);
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
 
@@ -111,8 +112,7 @@ n
     y[2*i+1] = 2*((double)rand() / (double)RAND_MAX) - 1;
   }
   t0 = clock();
-  hypoct_search(&elem, &d, &m, y, siz, &nlvl, &nlvl, &nnode, &lvlx, &nodex,
-                &chldp, &l, &ctr, trav);
+  hypoct_search(&elem, &d, &m, y, siz, &nlvl, lvlx, nodex, chldp, l, ctr, trav);
   t = clock();
   mb = 1e-6*sizeof(int)*(m*(nlvl + 1));
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
@@ -124,7 +124,7 @@ Tree depth:                                 %8i\n\
 Number of nodes:                            %8i\n\
 Total number of neighbors:                  %8i\n\
 Total number of nodes in interaction lists: %8i\n",
-nlvl, nnode, nborp[nnode], ilstp[nnode]
+nlvl, nnode, nnbor, nilst
 );
 
   // free memory
