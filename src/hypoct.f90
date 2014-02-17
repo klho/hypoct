@@ -34,16 +34,22 @@
 !   Special features include:
 !
 !   - Compatibility with general elements by associating with each point a size.
-!     Larger elements are assigned to larger nodes so as to enforce the
-!     well-separated condition for non-self non-neighbors. The effect of working
-!     with elements is that point distributions are now no longer strictly
-!     contained within each node but can extend slightly beyond it.
+!     The effect of working with elements is that point distributions are no
+!     longer strictly contained within each node but can extend slightly beyond
+!     it. Elements are assigned to nodes that are at least four times their size
+!     and have a modified "two over" neighbor definition in order to fully
+!     capture the near field.
 !
 !   - Optimizations for non-uniform and high-dimensional data such as adaptive
 !     subdivision and pruning of empty leaves. In particular, short dimensions
 !     are not bisected in order to keep nodes as hypercubic as possible.
 !
 !   - Support for periodic domains.
+!
+!   - Support for "sparse elements" suitable for finite element computations.
+!     Sparse elements interact only by overlap and are assigned to nodes that
+!     are at least twice their size. The usual "one over" neighbor definition
+!     then suffices to capture all external interactions.
 !
 !   HYPOCT is written mainly in a Fortran 77 style for compatibility, with
 !   select modern Fortran features for performance and accessibility.
@@ -88,11 +94,11 @@
 !        ELEM = 'e': elements
 !        ELEM = 's': sparse elements
 !      This specifies whether the input points represent true points or general
-!      elements (with sizes) that can extend beyond node boundaries. Larger
-!      elements are assigned to larger nodes. If ELEM = 'p', then SIZ is
-!      ignored. The distinction between elements and sparse elements is that
-!      elements are intended to interact densely with each other, whereas sparse
-!      elements interact only with those which they overlap.
+!      elements (with sizes) that can extend beyond node boundaries. The element
+!      type determines how points are assigned to nodes and also how node
+!      neighbors are defined (see HYPOCT_NBOR). If ELEM = 'p', then SIZ is
+!      ignored. Points and elements are intended to interact densely with each
+!      other, whereas sparse elements are intended to interact only by overlap.
 !
 !    D : INTEGER, INTENT(IN)
 !      Dimension of space. Requires D > 0.
@@ -537,9 +543,9 @@
 !
 !    For points (ELEM = 'p'), the neighbors of a given node consist of:
 !
-!    - All nodes at the same level immediately adjoining it.
+!    - All nodes at the same level immediately adjoining it ("one over").
 !
-!    - All non-empty nodes at a higher level (parent or coarser) immediately
+!    - All non-empty nodes at a coarser level (parent or above) immediately
 !      adjoining it.
 !
 !    For elements and sparse elements (ELEM = 'e' or 's'), first let the
@@ -548,19 +554,18 @@
 !
 !    Then for elements (ELEM = 'e'), the neighbors of a given node consist of:
 !
-!    - All nodes at the same level whose extensions are separated from its own
-!      extension by less than its extension's size.
+!    - All nodes at the same level separated by at most the node's size ("two
+!      over").
 !
-!    - All non-empty nodes at a higher level (parent or coarser) whose
-!      extensions are separated its own extension by less than its extension's
-!      size.
+!    - All non-empty nodes at a coarser level (parent or above) whose extensions
+!      are separated from its own extension by less than its extension's size.
 !
 !    Finally, for sparse elements (ELEM = 's'), the neighbors consist of:
 !
-!    - All nodes at the same level immediately adjoining it.
+!    - All nodes at the same level immediately adjoining it ("one over").
 !
-!    - All non-empty nodes at a higher level (parent or coarser) whose
-!      extensions overlap with its own extension.
+!    - All non-empty nodes at a coarser level (parent or above) whose extensions
+!      overlap with its own extension.
 !
 !    In all cases, a node is not considered its own neighbor.
 !
@@ -765,7 +770,8 @@
 !
 !    ELEM : CHARACTER, INTENT(IN)
 !      Element type. Requires ELEM = 'p', 'e', or 's'. If ELEM = 'p', then SIZ
-!      is ignored. Larger elements are contained in larger nodes.
+!      is ignored. This does not have to match the element type used to build
+!      the tree.
 !
 !    D : INTEGER, INTENT(IN)
 !      Dimension of space. Requires D > 0.
@@ -872,9 +878,13 @@
 !*******************************************************************************
 !    Determine if a point is too big for the next finer level based on its size.
 !
-!    If ELEM = 'p', the point is never too big. If ELEM = 'e', the point is too
-!    big if it is greater than a quarter of the node's size. If ELEM = 's', the
-!    point is too big if it is greater than half of the node's size.
+!    If ELEM = 'p', then a point is never too big.
+!
+!    If ELEM = 'e', then a point is too big if it is larger than a quarter of
+!    the next level's node size.
+!
+!    If ELEM = 's', then a point is too big if it is larger than half of the
+!    next level's node size.
 !*******************************************************************************
 
 !     ==========================================================================
@@ -965,7 +975,7 @@
 !*******************************************************************************
 !    Hold points at current leaf level and sort by hold status. A point is held
 !    if the node to which it is assigned will not be further subdivided or if it
-!    is too big for the next level.
+!    is too big for the next level (see HYPOCT_BIG).
 !*******************************************************************************
 
 !     ==========================================================================
@@ -1224,8 +1234,6 @@
                               mnbor, nnbor, nbori)
 !*******************************************************************************
 !    Add neighbor from a coarser level if it is sufficiently close.
-!
-!    See below for details.
 !*******************************************************************************
 
 !     ==========================================================================
@@ -1256,14 +1264,15 @@
 !     The formulas below come from the following. Two nodes are neighbors if and
 !     only if they are sufficiently close along all dimensions. Hence, we can
 !     examine each dimension and see if the nodes are too far apart along that
-!     dimension--if so, then we can reject that they are neighbors. Thus,
+!     dimension; if so, then we can reject that they are neighbors. Thus,
 !     consider each dimension independently and rescale so that along that
 !     dimension, the size of the smaller node is 1 while that of the larger node
-!     is 2^L, where L >= 0 is an integer. Let D be the distance between the node
-!     centers. Clearly, we cannot reject if D = 0, so assume hereafter that
-!     D > 0. Then M = D - (1/2)*(1 + 2^L) is the distance between the node
-!     boundaries and is also an integer since it must be a multiple of the
-!     smaller box size.
+!     is 2^L, where L >= 0 is an integer (the equality accounts for the fact
+!     that that particular dimension may not have been bisected). Let D be the
+!     distance between the node centers. Clearly, we cannot reject if D = 0, so
+!     assume hereafter that D > 0. Then M = D - (1/2)*(1 + 2^L) is the distance
+!     between the node boundaries and is evidently also an integer since it must
+!     be a multiple of the smaller box size.
 !
 !     If ELEM = 'p', the nodes are not neighbors if M > 0 or, equivalently,
 !     M >= 1. To allow a sufficient margin for roundoff error, we rewrite this
@@ -1274,8 +1283,8 @@
 !     or D > 19/8 + (3/4)*2^L.
 !
 !     If ELEM = 's', the nodes are not neighbors if M - (1/2)*(1 + 2^L) > 0,
-!     i.e., 2*M > 1 + 2^L or 2*M >= 2 + 2^L. We write this as 2*M > 3/2 + 2^L
-!     or D > 5/4 + 2^L.
+!     i.e., 2*M > 1 + 2^L or 2*M >= 2 + 2^L. We write this as 2*M > 3/2 + 2^L or
+!     D > 5/4 + 2^L.
 !     --------------------------------------------------------------------------
       lleaf = l(:,lvlref(ileaf))
       lnbor = l(:,lvlref(inbor))
@@ -1311,7 +1320,7 @@
 !    they neighbor.
 !
 !    If ELEM = 'p' or 's', the neighbors consist of those nodes that are at most
-!    "one over" from the node in question. If ELEM = 'e', the neighbors consist
+!    "one over" from the node in question; if ELEM = 'e', the neighbors consist
 !    of those nodes that are at most "two over".
 !*******************************************************************************
 

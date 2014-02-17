@@ -38,11 +38,11 @@ class Tree:
   :keyword elem:
     Element type: point (`'p'`), element (`'e'`), sparse element (`'s'`). This
     specifies whether the input points represent true points or general elements
-    (with sizes) that can extend beyond node boundaries. Larger elements are
-    assigned to larger nodes. If `elem = 'p'`, then `siz` is ignored. The
-    distinction between elements and sparse elements is that elements are
-    intended to interact densely with each other, whereas sparse elements
-    interact only with those which they overlap.
+    (with sizes) that can extend beyond node boundaries. The element type
+    determines how points are assigned to nodes and also how node neighbors are
+    defined (see :meth:`find_neighbors`). If `elem = 'p'`, then `siz` is
+    ignored. Points and elements are intended to interact densely with each
+    other, whereas sparse elements are intended to interact only by overlap.
   :type elem: {`'p'`, `'e'`, `'s'`}
 
   :keyword siz:
@@ -137,9 +137,9 @@ class Tree:
 
     For points (`elem = 'p'`), the neighbors of a given node consist of:
 
-    - All nodes at the same level immediately adjoining it.
+    - All nodes at the same level immediately adjoining it ("one over").
 
-    - All non-empty nodes at a higher level (parent or coarser) immediately
+    - All non-empty nodes at a coarser level (parent or above) immediately
       adjoining it.
 
     For elements and sparse elements (`elem = 'e'` or `'s'`), first let the
@@ -148,17 +148,17 @@ class Tree:
 
     Then for elements (`elem = 'e'`), the neighbors of a given node consist of:
 
-    - All nodes at the same level whose extensions are separated from its own
-      extension by less than its extension's size.
+    - All nodes at the same level separated by at most the node's size ("two
+      over")
 
-    - All non-empty nodes at a higher level (parent or coarser) whose extensions
-      are separated its own extension by less than its extension's size.
+    - All non-empty nodes at a coarser level (parent or above) whose extensions
+      are separated from its own extension by less than its extension's size.
 
     Finally, for sparse elements (`elem = 's'`), the neighbors consist of:
 
-    - All nodes at the same level immediately adjoining it.
+    - All nodes at the same level immediately adjoining it ("one over").
 
-    - All non-empty nodes at a higher level (parent or coarser) whose extensions
+    - All non-empty nodes at a coarser level (parent or above) whose extensions
       overlap with its own extension.
 
     In all cases, a node is not considered its own neighbor.
@@ -239,7 +239,8 @@ class Tree:
     See :meth:`generate_child_data` and :meth:`generate_geometry_data`.
 
     :param x:
-      Point coordinates, where the coordinate of point `i` is `x[:,i]`.
+      Point coordinates to search for, where the coordinate of point `i` is
+      x[:,i]`.
     :type x: :class:`numpy.ndarray`
 
     :keyword siz:
