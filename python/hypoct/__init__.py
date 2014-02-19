@@ -135,6 +135,8 @@ class Tree:
     """
     Find neighbors.
 
+    The definition of a neighbor depends on the element type (see :meth:`Tree`).
+
     For points (`elem = 'p'`), the neighbors of a given node consist of:
 
     - All nodes at the same level immediately adjoining it ("one over").
@@ -234,7 +236,7 @@ class Tree:
     Search hyperoctree.
 
     The element type of the points to search for are assumed to be the same as
-    that used to construct the tree.
+    that used to construct the tree (see :meth:`Tree`).
 
     This routine requires that the child and geometry data have already been
     generated. If this is not the case, then this is done automatically.
