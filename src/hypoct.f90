@@ -769,9 +769,9 @@
 !    =========
 !
 !    ELEM : CHARACTER, INTENT(IN)
-!      Element type. Requires ELEM = 'p', 'e', or 's'. If ELEM = 'p', then SIZ
-!      is ignored. This does not have to match the element type used to build
-!      the tree.
+!      Element type of points to search for. Requires ELEM = 'p', 'e', or 's'.
+!      If ELEM = 'p', then SIZ is ignored. This does not have to match the
+!      element type used to build the tree.
 !
 !    D : INTEGER, INTENT(IN)
 !      Dimension of space. Requires D > 0.

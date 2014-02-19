@@ -233,6 +233,9 @@ class Tree:
     """
     Search hyperoctree.
 
+    The element type of the points to search for are assumed to be the same as
+    that used to construct the tree.
+
     This routine requires that the child and geometry data have already been
     generated. If this is not the case, then this is done automatically.
 
@@ -246,7 +249,7 @@ class Tree:
     :keyword siz:
       Sizes associated with each point. If `siz` is a single float, then it is
       automatically expanded into an appropriately sized constant array. Not
-      accessed if `elem = 'p'`. Larger elements are contained in larger nodes.
+      accessed if `elem = 'p'`.
     :type siz: :class:`numpy.ndarray`
 
     :keyword mlvl:
