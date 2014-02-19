@@ -897,9 +897,7 @@
 !     ==========================================================================
 
       big = .false.
-      if (elem == 'p') then
-        return
-      elseif (elem == 'e') then
+      if (elem == 'e') then
         big = (4d0*siz > lmin)
       elseif (elem == 's') then
         big = (2d0*siz > lmin)
