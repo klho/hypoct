@@ -51,7 +51,7 @@ fortran_driver: fortran
 	cd $(EXAMPLES) ; ./$(LIB)_driver
 
 c_driver: c $(LIB).h
-	$(CC) -o $(EXAMPLES)/$(LIB)_driver $(CFLAGS) -I$(BIN) -I$(C) -lgfortran -lm $(EXAMPLES)/$(LIB)_driver.c $(BIN)/$(LIB).o $(BIN)/$(LIB)_c.o
+	$(CC) -o $(EXAMPLES)/$(LIB)_driver $(CFLAGS) -I$(BIN) -I$(C) $(EXAMPLES)/$(LIB)_driver.c $(BIN)/$(LIB).o $(BIN)/$(LIB)_c.o -lgfortran -lm
 	cd $(EXAMPLES) ; ./$(LIB)_driver
 
 python_driver: python

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2013-2014 Kenneth L. Ho
+ * Copyright (C) 2013-2015 Kenneth L. Ho
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -56,8 +56,8 @@ n
       *xi = (int *)malloc(n*sizeof(int)), *xp, *nodex;
   double rootx[2*d];
   t0 = clock();
-  hypoct_build(&adap, &elem, &d, &n, x, siz, &occ, &lvlmax, ext,
-               &lvlx, rootx, xi, &xp, &nodex);
+  hypoct_c_build(&adap, &elem, &d, &n, x, siz, &occ, &lvlmax, ext,
+                 &lvlx, rootx, xi, &xp, &nodex);
   t = clock();
   int nlvl = lvlx[1], nnode = lvlx[2*(nlvl + 1)];
   mb = 1e-6*(sizeof(int)*(2*(nlvl + 2) + n + 3*nnode + 1) +
@@ -68,7 +68,7 @@ n
   printf("Generating child data...     ");
   int *chldp;
   t0 = clock();
-  hypoct_chld(lvlx, nodex, &chldp);
+  hypoct_c_chld(lvlx, nodex, &chldp);
   t = clock();
   mb = 1e-6*sizeof(int)*(nnode + 1);
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
@@ -77,7 +77,7 @@ n
   printf("Generating geometry data...  ");
   double *l, *ctr;
   t0 = clock();
-  hypoct_geom(&d, lvlx, rootx, nodex, &l, &ctr);
+  hypoct_c_geom(&d, lvlx, rootx, nodex, &l, &ctr);
   t = clock();
   mb = 1e-6*sizeof(double)*(2*nlvl + 2*nnode);
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);
@@ -87,7 +87,7 @@ n
   int per[d], *nborp, *nbori;
   for (i = 0; i < d; ++i) { per[i] = 0; }
   t0 = clock();
-  hypoct_nbor(&elem, &d, lvlx, xp, nodex, chldp, l, ctr, per, &nbori, &nborp);
+  hypoct_c_nbor(&elem, &d, lvlx, xp, nodex, chldp, l, ctr, per, &nbori, &nborp);
   t = clock();
   int nnbor = nborp[nnode];
   mb = 1e-6*sizeof(int)*(nnode + 1 + nnbor);
@@ -97,7 +97,7 @@ n
   printf("Getting interaction lists... ");
   int *ilstp, *ilsti;
   t0 = clock();
-  hypoct_ilst(lvlx, xp, nodex, chldp, nbori, nborp, &ilsti, &ilstp);
+  hypoct_c_ilst(lvlx, xp, nodex, chldp, nbori, nborp, &ilsti, &ilstp);
   t = clock();
   int nilst = ilstp[nnode];
   mb = 1e-6*sizeof(int)*(nnode + 1 + nilst);
@@ -112,7 +112,7 @@ n
     y[2*i+1] = 2*((double)rand() / (double)RAND_MAX) - 1;
   }
   t0 = clock();
-  hypoct_search(&elem, &d, &m, y, siz, &nlvl, lvlx, nodex, chldp, l, ctr, trav);
+  hypoct_c_search(&elem, &d, &m, y, siz, &nlvl, lvlx, nodex, chldp, l, ctr, trav);
   t = clock();
   mb = 1e-6*sizeof(int)*(m*(nlvl + 1));
   printf(fmt, (double)(t - t0) / CLOCKS_PER_SEC, mb);

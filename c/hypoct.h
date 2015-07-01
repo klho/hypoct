@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2013-2014 Kenneth L. Ho
+ * Copyright (C) 2013-2015 Kenneth L. Ho
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -26,7 +26,7 @@
 /*
  * Build hyperoctree.
  */
-extern void hypoct_build(
+extern void hypoct_c_build(
   char *adap, char *elem, int *d, int *n, double *x, double *siz, int *occ,
   int *lvlmax, double *ext, int **lvlx, double *root, int *xi, int **xp,
   int **nodex
@@ -35,19 +35,19 @@ extern void hypoct_build(
 /*
  * Generate child data.
  */
-extern void hypoct_chld(int *lvlx, int *nodex, int **chldp);
+extern void hypoct_c_chld(int *lvlx, int *nodex, int **chldp);
 
 /*
  * Generate geometry data.
  */
-extern void hypoct_geom(
+extern void hypoct_c_geom(
   int *d, int *lvlx, double *rootx, int *nodex, double **l, double **ctr
 );
 
 /*
  * Get interaction lists.
  */
-extern void hypoct_ilst(
+extern void hypoct_c_ilst(
   int *lvlx, int *xp, int *nodex, int *chldp, int *nborp, int *nbori,
   int **ilsti, int **ilstp
 );
@@ -55,7 +55,7 @@ extern void hypoct_ilst(
 /*
  * Find neighbors.
  */
-extern void hypoct_nbor(
+extern void hypoct_c_nbor(
   char *elem, int *d, int *lvlx, int *xp, int *nodex, int *chldp,
   double *l, double *ctr, int *per, int **nbori, int **nborp
 );
@@ -63,7 +63,7 @@ extern void hypoct_nbor(
 /*
  * Search hyperoctree.
  */
-extern void hypoct_search(
+extern void hypoct_c_search(
   char *elem, int *d, int *n, double *x, double *siz, int *mlvl, int *lvlx,
   int *nodex, int *chldp, double *l, double *ctr, int *trav
 );

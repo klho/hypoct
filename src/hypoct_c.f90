@@ -1,5 +1,5 @@
 !*******************************************************************************
-!   Copyright (C) 2013-2014 Kenneth L. Ho
+!   Copyright (C) 2013-2015 Kenneth L. Ho
 !
 !   This program is free software: you can redistribute it and/or modify it
 !   under the terms of the GNU General Public License as published by the Free
@@ -33,7 +33,7 @@
 !*******************************************************************************
      subroutine hypoct_c_build(adap, elem, d, n, x, siz, occ, lvlmax, ext, &
                                lvlx, rootx, xi, xp, nodex) &
-                bind(C, name='hypoct_build')
+                bind(C)
 !*******************************************************************************
 !    C wrapper for HYPOCT_BUILD.
 !*******************************************************************************
@@ -65,7 +65,7 @@
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_c_chld(lvlx, nodex, chldp) bind(C, name="hypoct_chld")
+     subroutine hypoct_c_chld(lvlx, nodex, chldp) bind(C)
 !*******************************************************************************
 !    C wrapper for HYPOCT_CHLD.
 !*******************************************************************************
@@ -90,8 +90,7 @@
      end subroutine
 
 !*******************************************************************************
-     subroutine hypoct_c_geom(d, lvlx, rootx, nodex, l, ctr) &
-                bind(C, name="hypoct_geom")
+     subroutine hypoct_c_geom(d, lvlx, rootx, nodex, l, ctr) bind(C)
 !*******************************************************************************
 !    C wrapper for HYPOCT_GEOM.
 !*******************************************************************************
@@ -120,7 +119,7 @@
 !*******************************************************************************
      subroutine hypoct_c_ilst(lvlx, xp, nodex, chldp, nbori, nborp, &
                               ilsti, ilstp) &
-                bind(C, name="hypoct_ilst")
+                bind(C)
 !*******************************************************************************
 !    C wrapper for HYPOCT_ILST.
 !*******************************************************************************
@@ -150,7 +149,7 @@
 !*******************************************************************************
      subroutine hypoct_c_nbor(elem, d, lvlx, xp, nodex, chldp, l, ctr, per, &
                               nbori, nborp) &
-                bind(C, name="hypoct_nbor")
+                bind(C)
 !*******************************************************************************
 !    C wrapper for HYPOCT_NBOR.
 !*******************************************************************************
@@ -186,7 +185,7 @@
 !*******************************************************************************
      subroutine hypoct_c_search(elem, d, n, x, siz, mlvl, lvlx, nodex, chldp, &
                                 l, ctr, trav) &
-                bind(C, name="hypoct_search")
+                bind(C)
 !*******************************************************************************
 !    C wrapper for HYPOCT_SEARCH.
 !*******************************************************************************
