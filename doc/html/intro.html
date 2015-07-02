@@ -1,0 +1,215 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &mdash; hypoct 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="hypoct 0.1 documentation" href="index.html" />
+    <link rel="next" title="Installing" href="install.html" />
+    <link rel="prev" title="Welcome to hypoct’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installing"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to hypoct’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">hypoct 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>A hyperoctree is a geometrical tree data structure where each node is recursively subdivided into orthants. It is a multidimensional generalization of the binary tree in 1D, the quadtree in 2D, and the octree in 3D.</p>
+<p>hypoct contains routines for constructing and manipulating point hyperoctrees. Its primary purpose is to support fast tree-based algorithms such as the fast multipole method (FMM). In this context, it provides an efficient hierarchical indexing scheme as well as encodes all near- and far-field information via neighbor and interaction lists.</p>
+<p>Special features include:</p>
+<ul class="simple">
+<li>Compatibility with general elements by associating with each point a size. The effect of working with elements is that point distributions are no longer strictly contained within each node but can extend slightly beyond it. Elements are assigned to nodes that are at least four times their size and have a modified &#8220;two over&#8221; neighbor definition in order to fully capture the near field.</li>
+<li>Optimizations for non-uniform and high-dimensional data such as adaptive subdivision and pruning of empty leaves. In particular, short dimensions are not bisected in order to keep nodes as hypercubic as possible.</li>
+<li>Support for periodic domains.</li>
+<li>Support for &#8220;sparse elements&#8221; suitable for finite element computations. Sparse elements interact only by overlap and are assigned to nodes that are at least twice their size. The usual &#8220;one over&#8221; neighbor definition then suffices to capture all external interactions.</li>
+</ul>
+<p>hypoct is written in Fortran with wrappers in C and Python. This documentation mainly covers the Python interface, the intended method for most users.</p>
+<div class="section" id="motivation-and-design">
+<h2>Motivation and design<a class="headerlink" href="#motivation-and-design" title="Permalink to this headline">¶</a></h2>
+<p>To explain the motivation and design choices behind this library, it is perhaps easiest to begin by describing how a typical tree algorithm is implemented. For this, imagine a set of points distributed over some spatial region in <span class="math">\(d\)</span> dimensions. Most codes proceed by first enclosing all of the points within a sufficiently large hypercube called the root node. If the root contains more than a prescribed maximum number of points, it is split into <span class="math">\(2^{d}\)</span> children of equal size via bisection in each dimension and its points distributed accordingly between them. Each of these children are in turn subdivided if they contain too many points, and the process repeated for each new node added. The leaves of the tree are those nodes that do not have any children; they obviously satisfy the prescribed maximum occupancy condition.</p>
+<div class="section" id="general-elements">
+<h3>General elements<a class="headerlink" href="#general-elements" title="Permalink to this headline">¶</a></h3>
+<p>In the fast algorithm context, a key piece of information that one would like to query from the tree is which points lie in the near and far fields of a given cluster of points. A point is in the far field of a cluster if it is separated from that cluster by at least the cluster&#8217;s size (also called <em>well-separated</em>). The near field is just the complement of the far field and can sometimes afford a more convenient description. A tree provides a natural clustering of points via the nodes to which they belong.</p>
+<p>For true points, which are zero-dimensional objects, the near field of a node is composed of precisely its neighbors, i.e., those nodes of the tree which immediately adjoin it. However, we are often interested in not just points but general elements, for example, triangles to describe a surface in 3D or cubes to tessellate a volume. These are characterized by a nonzero size, e.g., the diameter of the triangle or the extent of the cube. We will stick to the point formulation for tree construction here, but we associate with each point now a size corresponding to the size of the element which it represents. It is helpful to think of this size as the diameter of the element and the point as its centroid, but it can be any point in or on the element. Then the problem as compared to the pure point setting is that elements can now extend beyond the boundaries of the node to which they belong. We can also regard elements as continuous point distributions, in which case the point distribution belonging to a given node is no longer contained strictly within it but rather within a slightly enlarged &#8216;halo&#8217; region.</p>
+<p>A consequence of this is that the usual &#8220;one over&#8221; neighbor definition is insufficient to impose that non-neighbors be well-separated. At minimum, the neighbors of a halo extension must include nodes that are at least &#8220;two over&#8221;. We choose this as our modified neighbor definition for elements, which constrains that we assign elements to nodes that are at least four times their size. In particular, this means that not all elements are pushed down to the next level upon subdivision; large elements are held back to ensure correctness.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This also means that not all nodes need obey the maximum occupancy condition, though they will do so as much as possible given the size restriction. In particular, if a leaf contains only elements whose natural level is deeper than the leaf&#8217;s level, then the leaf will satisfy the occupancy condition.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The simple neighbor definition above characterizes the case when two nodes are at the same level. When one node is larger than the other, the situation becomes slightly more complicated.</p>
+</div>
+<p>There is also an additional facility for elements that interact only sparsely, i.e., by overlap. This is suitable for, e.g., a finite element discretization of a partial differential equation. Sparse elements are assigned to nodes that are at least twice their size, for which the usual &#8220;one over&#8221; neighbor definition suffices to capture all external interactions. This substantially reduces the extent of the near field as compared with general &#8216;dense&#8217; elements.</p>
+</div>
+<div class="section" id="periodic-domains">
+<h3>Periodic domains<a class="headerlink" href="#periodic-domains" title="Permalink to this headline">¶</a></h3>
+<p>Problems involving periodic domains are encountered with some regularity and these, too, present troubles for standard tree codes. In this setting, the given data represent the unit cell, which is supplemented by additional parameters defining its extent. Building the tree itself is not problematic, but finding a neighbor structure compatible with the periodic geometry produces some difficulty. This is because the neighboring nodes across boundaries will generally not align with the node structure inside the unit cell. Thus, we must force the tree to conform to the problem geometry so that it is compatible with the imposed periodicity.</p>
+<p>We therefore allow the extent of the root node to be specified by the user (and otherwise calculated from the data if not supplied). Since this can lead to highly skewed aspect ratios, we also institute an adaptive subdivision criterion such that new nodes are as hypercubic as possible. This is achieved by halving only those node dimensions that are at least <span class="math">\(1 / \sqrt{2}\)</span> times the maximum node dimension at each level, which ensures a bound of <span class="math">\(\sqrt{2}\)</span> on the aspect ratio for nodes at levels for which all dimensions are bisected.</p>
+</div>
+<div class="section" id="further-adaptivity">
+<h3>Further adaptivity<a class="headerlink" href="#further-adaptivity" title="Permalink to this headline">¶</a></h3>
+<p>We have already seen some adaptivity in the splitting of nodes above, but for problems with non-uniform distributions or in high dimensions, further adaptivity is often desired. A potential bottleneck in such codes is the creation of all <span class="math">\(2^{d}\)</span> children for a given node upon subdivision, which for large <span class="math">\(d\)</span> can become expensive. In this library, we therefore create only those nodes which are needed, allowing us to handle far larger dimensions than usual. This also has the effect of pruning empty leaves from the tree, which is a relatively standard feature.</p>
+</div>
+<div class="section" id="dynamic-memory">
+<h3>Dynamic memory<a class="headerlink" href="#dynamic-memory" title="Permalink to this headline">¶</a></h3>
+<p>Finally, we wanted also to make use of some modern Fortran features to streamline the algorithm as compared to classical Fortran 77 programs. The main beneficiary is the use of dynamic memory. Older Fortran-style codes would typically run the tree algorithm twice: first to go through and count up the amount of memory required and then again to perform the actual memory writes once a properly sized block has been allocated. Here, we do essentially both at the same time by doubling the size of our working array each time that more memory is requested. All arrays are resized appropriately on output. Granted, this is a pretty minor point given all of the other languages out there with dynamic memory, but it is rather useful from a Fortran 77 standpoint.</p>
+<p>Other features that we took advantage of include modules for better encapsulation of data and routines, and some shorthand notation for clarity and, perhaps, optimizability.</p>
+</div>
+</div>
+<div class="section" id="algorithmic-overview">
+<h2>Algorithmic overview<a class="headerlink" href="#algorithmic-overview" title="Permalink to this headline">¶</a></h2>
+<p>We have already discussed the tree construction process above. Briefly, to review, it consists of recursively subdividing nodes following a top-down sweep, alternately deciding which nodes to divide and then which points within those nodes to hold from further subdivision.</p>
+<p>Finding neighbors similarly involves a top-down sweep. We first initialize the neighbors at the two coarsest levels as a base case, then at each finer level search for the neighbors of each node among the children of its parent&#8217;s neighbors. This hence nests the neighbor search hierarchically and results in good performance.</p>
+<p>For points, the neighbors of a given node consist of:</p>
+<ul class="simple">
+<li>All nodes at the same level immediately adjoining it (&#8220;one over&#8221;).</li>
+<li>All non-empty nodes at a coarser level (parent or above) immediately adjoining it.</li>
+</ul>
+<p>For elements, the neighbors of a given node consist of:</p>
+<ul class="simple">
+<li>All nodes at the same level separated by at most the node&#8217;s size (&#8220;two over&#8221;).</li>
+<li>All non-empty nodes at a coarser level (parent or above) whose halo extensions are separated its own extension by less than its extension&#8217;s size.</li>
+</ul>
+<p>Finally, for sparse elements, the neighbors consist of:</p>
+<ul class="simple">
+<li>All nodes at the same level immediately adjoining it (&#8220;one over&#8221;).</li>
+<li>All non-empty nodes at a coarser level (parent or above) whose halo extensions overlap with its own extension.</li>
+</ul>
+<p>In all cases, a node is not considered its own neighbor.</p>
+<p>For FMM codes, it is also useful to have access to the interaction list of a node, which consists of:</p>
+<ul class="simple">
+<li>All nodes at the same level that are children of the neighbors of the node&#8217;s parent but not neighbors of the node itself.</li>
+<li>All non-empty nodes at a coarser level (parent or above) that are neighbors of the node&#8217;s parent but not neighbors of the node itself.</li>
+</ul>
+<p>Interaction lists define a systematic multiscale tiling of space and provide an efficient organization of the main FMM computations. Here, we generate interaction lists as follows. First, we initialize the lists for the three coarsest levels. Then for each node at a finer level, we simply apply the definition directly by searching among the children of its parent&#8217;s neighbors.</p>
+<p>For data distributions that are not too pathological, meaning here that the elements are not oversized and that the data do not consist of separate point clusters of vastly different scales (which, in principle, could be handled by constructing a tree on each cluster individually), the following complexity estimates hold, where <span class="math">\(N\)</span> is the number of points:</p>
+<ul class="simple">
+<li>The running time to build a tree scales as <span class="math">\(\mathcal{O} (N \log N)\)</span>, while its memory requirement is <span class="math">\(\mathcal{O} (N)\)</span>.</li>
+<li>Both the time and memory complexities for finding all neighbors are <span class="math">\(\mathcal{O} (N)\)</span>.</li>
+<li>Both the time and memory complexities for generating all interaction lists are <span class="math">\(\mathcal{O} (N)\)</span>.</li>
+</ul>
+</div>
+<div class="section" id="licensing-and-availability">
+<h2>Licensing and availability<a class="headerlink" href="#licensing-and-availability" title="Permalink to this headline">¶</a></h2>
+<p>hypoct is freely available under the <a class="reference external" href="http://www.gnu.org/licenses/gpl.html">GNU GPL</a> and can be downloaded at <a class="reference external" href="https://github.com/klho/hypoct">https://github.com/klho/hypoct</a>. To request alternate licenses, please contact the author.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#motivation-and-design">Motivation and design</a><ul>
+<li><a class="reference internal" href="#general-elements">General elements</a></li>
+<li><a class="reference internal" href="#periodic-domains">Periodic domains</a></li>
+<li><a class="reference internal" href="#further-adaptivity">Further adaptivity</a></li>
+<li><a class="reference internal" href="#dynamic-memory">Dynamic memory</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#algorithmic-overview">Algorithmic overview</a></li>
+<li><a class="reference internal" href="#licensing-and-availability">Licensing and availability</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to hypoct&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">Installing</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/intro.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installing"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to hypoct’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">hypoct 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Kenneth L. Ho.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

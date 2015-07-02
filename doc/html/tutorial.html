@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial &mdash; hypoct 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="hypoct 0.1 documentation" href="index.html" />
+    <link rel="next" title="Examples" href="example.html" />
+    <link rel="prev" title="Installing" href="install.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="example.html" title="Examples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installing"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">hypoct 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p>We now present a tutorial on using the Python interface to hypoct. From here on, we will therefore assume that hypoct has been properly installed along with its Python wrapper; if this is not the case, please go back to <a class="reference internal" href="install.html"><em>Installing</em></a>. The choice to cover only the Python interface is merely for convenience. For help regarding the Fortran or C interfaces, please consult the corresponding source code and driver programs.</p>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The Python interface is located in the directory <tt class="docutils literal"><span class="pre">python</span></tt>, which contains the directory <tt class="docutils literal"><span class="pre">hypoct</span></tt>, organizing the main Python package, and <tt class="docutils literal"><span class="pre">hypoct_python.so</span></tt>, the F2PY-ed Fortran library. The file <tt class="docutils literal"><span class="pre">hypoct_python.so</span></tt> contains all wrapped routines and is imported by <a class="reference internal" href="api.html#module-hypoct" title="hypoct"><tt class="xref py py-mod docutils literal"><span class="pre">hypoct</span></tt></a>, which creates a somewhat more convenient (but still pretty bare-bones) object-oriented interface around it. For details on the Python modules, please see the <a class="reference internal" href="api.html"><em>Python API</em></a>; for details on data formats, please refer to the Fortran source code.</p>
+<p>We will now step through the process of running a program calling hypoct from Python, following the Python driver program as a guide.</p>
+</div>
+<div class="section" id="initializing">
+<h2>Initializing<a class="headerlink" href="#initializing" title="Permalink to this headline">¶</a></h2>
+<p>The first step is to import <a class="reference internal" href="api.html#module-hypoct" title="hypoct"><tt class="xref py py-mod docutils literal"><span class="pre">hypoct</span></tt></a> by issuing the command:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">hypoct</span>
+</pre></div>
+</div>
+<p>at the Python prompt. This should work if you are in the <tt class="docutils literal"><span class="pre">python</span></tt> directory; otherwise, you may have to first type something like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">hypoct</span><span class="o">/</span><span class="n">python</span><span class="o">/</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>in order to tell Python where to look.</p>
+<p>Now let&#8217;s generate some data. As an example, we consider points distributed uniformly on the unit circle:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)[:</span><span class="n">n</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)],</span> <span class="n">order</span><span class="o">=</span><span class="s">&#39;F&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note the use of the flag <tt class="docutils literal"><span class="pre">order='F'</span></tt> in <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.8)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.array()</span></tt></a>. This instantiates the array in Fortran-contiguous order and is important for avoiding data copying when passing to the backend.</p>
+</div>
+<div class="section" id="building-the-tree">
+<h2>Building the tree<a class="headerlink" href="#building-the-tree" title="Permalink to this headline">¶</a></h2>
+<p>Building a tree can be as easy as typing:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">hypoct</span><span class="o">.</span><span class="n">Tree</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Of course, this uses only the default options, e.g., sorting with a maximum occupany parameter of one, treating the data as zero-dimensional points, and no control over the extent of the root. To specify any of these, we can use keyword arguments as explained in <a class="reference internal" href="api.html#hypoct.Tree" title="hypoct.Tree"><tt class="xref py py-meth docutils literal"><span class="pre">hypoct.Tree()</span></tt></a>. We also outline these briefly below.</p>
+<div class="section" id="adaptivity-setting">
+<h3>Adaptivity setting<a class="headerlink" href="#adaptivity-setting" title="Permalink to this headline">¶</a></h3>
+<p>To switch the build mode from adaptive to uniform subdivision (i.e., all leaves are divided if any one of them violates the occupany condition), enter:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">hypoct</span><span class="o">.</span><span class="n">Tree</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">adap</span><span class="o">=</span><span class="s">&#39;u&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The default is <tt class="docutils literal"><span class="pre">adap='a'</span></tt>.</p>
+</div>
+<div class="section" id="tree-depth">
+<h3>Tree depth<a class="headerlink" href="#tree-depth" title="Permalink to this headline">¶</a></h3>
+<p>To control the level of subdivision, we can set the maximum leaf occupancy using the <tt class="docutils literal"><span class="pre">occ</span></tt> keyword. For example, to subdivide until all leaves contain no more than five points, we can type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">hypoct</span><span class="o">.</span><span class="n">Tree</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">occ</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The default is <tt class="docutils literal"><span class="pre">occ=1</span></tt>.</p>
+<p>It is also possible to set the maximum tree depth explicitly using the <tt class="docutils literal"><span class="pre">lvlmax</span></tt> keyword, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">hypoct</span><span class="o">.</span><span class="n">Tree</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lvlmax</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The root is denoted as level zero. The default is <tt class="docutils literal"><span class="pre">lvlmax=-1</span></tt>, which specifies no maximum depth. Both <tt class="docutils literal"><span class="pre">occ</span></tt> and <tt class="docutils literal"><span class="pre">lvlmax</span></tt> can be employed together, with <tt class="docutils literal"><span class="pre">lvlmax</span></tt> setting a hard limit on the tree.</p>
+</div>
+<div class="section" id="element-setting">
+<h3>Element setting<a class="headerlink" href="#element-setting" title="Permalink to this headline">¶</a></h3>
+<p>To treat the points as elements, each with a size, first create an array containing the size of each point, then build the tree using the <tt class="docutils literal"><span class="pre">elem</span></tt> and <tt class="docutils literal"><span class="pre">siz</span></tt> keywords. For instance, to consider the points as elements each of size 0.1, write:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">hypoct</span><span class="o">.</span><span class="n">Tree</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">elem</span><span class="o">=</span><span class="s">&#39;e&#39;</span><span class="p">,</span> <span class="n">siz</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where we have used the shorthand that if <tt class="docutils literal"><span class="pre">siz</span></tt> is a single number, then it is automatically expanded into an array of the appropriate size. Similarly, to build a tree on &#8220;sparse elements&#8221;, write:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span>  <span class="n">hypoct</span><span class="o">.</span><span class="n">Tree</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">elem</span><span class="o">=</span><span class="s">&#39;s&#39;</span><span class="p">,</span> <span class="n">siz</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The defaults are <tt class="docutils literal"><span class="pre">elem='p'</span></tt>, corresponding to points, and <tt class="docutils literal"><span class="pre">siz=0</span></tt>.</p>
+</div>
+<div class="section" id="root-extent">
+<h3>Root extent<a class="headerlink" href="#root-extent" title="Permalink to this headline">¶</a></h3>
+<p>The extent of the root node can be specified using the <tt class="docutils literal"><span class="pre">ext</span></tt> keyword, e.g.,</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">hypoct</span><span class="o">.</span><span class="n">Tree</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>This tells the code to set the length of the root along the first dimension to 10; its length along the second dimension is calculated from the data (since the corresponding entry is nonpositive). This is often useful if there is some external parameter governing the problem geometry, for example, periodicity conditions. Like <tt class="docutils literal"><span class="pre">siz</span></tt>, <tt class="docutils literal"><span class="pre">ext</span></tt> can also be given as a single number, in which case it is automatically expanded as appropriate. The default is <tt class="docutils literal"><span class="pre">ext=0</span></tt>.</p>
+</div>
+<div class="section" id="remarks">
+<h3>Remarks<a class="headerlink" href="#remarks" title="Permalink to this headline">¶</a></h3>
+<p>All options can be combined with each other. The output is stored as a <a class="reference internal" href="api.html#hypoct.Tree" title="hypoct.Tree"><tt class="xref py py-class docutils literal"><span class="pre">hypoct.Tree</span></tt></a> instance, which is a thin wrapper for the arrays output from Fortran. On our machine, running:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">hypoct</span><span class="o">.</span><span class="n">Tree</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">lvlx</span>
+</pre></div>
+</div>
+<p>gives:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">array</span><span class="p">([[</span>  <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>   <span class="mi">5</span><span class="p">,</span>  <span class="mi">17</span><span class="p">,</span>  <span class="mi">45</span><span class="p">,</span>  <span class="mi">97</span><span class="p">,</span> <span class="mi">177</span><span class="p">,</span> <span class="mi">193</span><span class="p">],</span>
+       <span class="p">[</span>  <span class="mi">6</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span>   <span class="mi">3</span><span class="p">,</span>   <span class="mi">3</span><span class="p">,</span>   <span class="mi">3</span><span class="p">,</span>   <span class="mi">3</span><span class="p">,</span>   <span class="mi">3</span><span class="p">,</span>   <span class="mi">3</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int32</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which indicates that the tree has 6 levels (beyond the root at level 0) with 193 nodes in total. See the Fortran source code for details.</p>
+</div>
+</div>
+<div class="section" id="generating-auxiliary-data">
+<h2>Generating auxiliary data<a class="headerlink" href="#generating-auxiliary-data" title="Permalink to this headline">¶</a></h2>
+<p>The base tree output is stored in a rather spartan manner; it contains only the bare minimum necessary to reconstruct the data for the entire tree. This is not always convenient and it is sometimes useful to have the data in a more easily accessible form. For instance, the base tree representation contains only parent and child identifier information that only really allows you to traverse a tree from the bottom up. To traverse a tree from the top down, we have to generate child pointers, which we can do via:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">generate_child_data</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We can also generate geometry information (center and extent) for each node by using:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">generate_geometry_data</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>These commands create the arrays <tt class="docutils literal"><span class="pre">tree.chldp</span></tt>, and <tt class="docutils literal"><span class="pre">tree.l</span></tt>, and <tt class="docutils literal"><span class="pre">tree.ctr</span></tt>, respectively.</p>
+</div>
+<div class="section" id="finding-neighbors">
+<h2>Finding neighbors<a class="headerlink" href="#finding-neighbors" title="Permalink to this headline">¶</a></h2>
+<p>To find the neighbors of each node, type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">find_neighbors</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>which creates the neighbor index and pointer arrays <tt class="docutils literal"><span class="pre">tree.nbori</span></tt> and <tt class="docutils literal"><span class="pre">tree.nborp</span></tt>, respectively. The method also accepts the keyword <tt class="docutils literal"><span class="pre">per</span></tt> indicating whether the root is periodic in a given dimension. For example, to impose that the root is periodic in the first but not the second dimension, set:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">find_neighbors</span><span class="p">(</span><span class="n">per</span><span class="o">=</span><span class="p">[</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>It is worth emphasizing that the size of the unit cell cannot be directly controlled here; for this, use the <tt class="docutils literal"><span class="pre">ext</span></tt> keyword in <a class="reference internal" href="api.html#hypoct.Tree" title="hypoct.Tree"><tt class="xref py py-meth docutils literal"><span class="pre">hypoct.Tree()</span></tt></a>. As with the <tt class="docutils literal"><span class="pre">siz</span></tt> and <tt class="docutils literal"><span class="pre">ext</span></tt> keywords for <a class="reference internal" href="api.html#hypoct.Tree" title="hypoct.Tree"><tt class="xref py py-meth docutils literal"><span class="pre">hypoct.Tree()</span></tt></a>, we can also use shorthand by writing just, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">find_neighbors</span><span class="p">(</span><span class="n">per</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>for double periodicity. The default is <tt class="docutils literal"><span class="pre">per=False</span></tt>.</p>
+<p>The method <a class="reference internal" href="api.html#hypoct.Tree.find_neighbors" title="hypoct.Tree.find_neighbors"><tt class="xref py py-meth docutils literal"><span class="pre">hypoct.Tree.find_neighbors()</span></tt></a> requires that the child data from <a class="reference internal" href="api.html#hypoct.Tree.generate_child_data" title="hypoct.Tree.generate_child_data"><tt class="xref py py-meth docutils literal"><span class="pre">hypoct.Tree.generate_child_data()</span></tt></a> have already been generated; if this is not the case, then this is done automatically.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Recall that neighbors are defined differently for points vs. elements as described briefly in <a class="reference internal" href="intro.html"><em>Introduction</em></a>.</p>
+</div>
+</div>
+<div class="section" id="getting-interaction-lists">
+<h2>Getting interaction lists<a class="headerlink" href="#getting-interaction-lists" title="Permalink to this headline">¶</a></h2>
+<p>Interaction lists are often used in fast multipole-type algorithms to systematically cover the far field. To get interaction lists for all nodes, type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">get_interaction_lists</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This command requires that the neighbor data from <a class="reference internal" href="api.html#hypoct.Tree.find_neighbors" title="hypoct.Tree.find_neighbors"><tt class="xref py py-meth docutils literal"><span class="pre">hypoct.Tree.find_neighbors()</span></tt></a> have already been generated; if this is not the case, then this is done automatically using default settings. Outputs include the index and pointer arrays <tt class="docutils literal"><span class="pre">tree.ilsti</span></tt> and <tt class="docutils literal"><span class="pre">tree.ilstp</span></tt>, respectively.</p>
+</div>
+<div class="section" id="searching-the-tree">
+<h2>Searching the tree<a class="headerlink" href="#searching-the-tree" title="Permalink to this headline">¶</a></h2>
+<p>It is often also useful to be able to search the tree for a given set of points. This can be done via:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">trav</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <tt class="docutils literal"><span class="pre">x</span></tt> is the set of points to search for. The output <tt class="docutils literal"><span class="pre">trav</span></tt> is an array that records the tree traversal history for each point: the node containing the point <tt class="docutils literal"><span class="pre">x[:,i]</span></tt> at level <tt class="docutils literal"><span class="pre">j</span></tt> has index <tt class="docutils literal"><span class="pre">trav[i,j]</span></tt>; if no such node exists, then <tt class="docutils literal"><span class="pre">trav[i,j]</span> <span class="pre">=</span> <span class="pre">0</span></tt>. By default, the tree is traversed fully from top to bottom. To limit the maximum tree depth searched, use the keyword <tt class="docutils literal"><span class="pre">mlvl</span></tt>.</p>
+<p>If we have a tree on elements, then we can also attach a size to each point using the keyword <tt class="docutils literal"><span class="pre">siz</span></tt>. Each node in the tree traversal array, if it exists, must fully contain the point based on its size. The default is <tt class="docutils literal"><span class="pre">siz=0</span></tt>.</p>
+<p>This command requires that child and geometry data have already been generated; if this is not the case, then this is done automatically.</p>
+</div>
+<div class="section" id="putting-it-all-together">
+<h2>Putting it all together<a class="headerlink" href="#putting-it-all-together" title="Permalink to this headline">¶</a></h2>
+<p>A complete example program for building a tree and generating all auxiliary data is given as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">hypoct</span><span class="o">,</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c"># initialize points</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)[:</span><span class="n">n</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)],</span> <span class="n">order</span><span class="o">=</span><span class="s">&#39;F&#39;</span><span class="p">)</span>
+
+<span class="c"># build tree</span>
+<span class="n">tree</span> <span class="o">=</span> <span class="n">hypoct</span><span class="o">.</span><span class="n">Tree</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">occ</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">tree</span><span class="o">.</span><span class="n">generate_child_data</span><span class="p">()</span>
+<span class="n">tree</span><span class="o">.</span><span class="n">generate_geometry_data</span><span class="p">()</span>
+<span class="n">tree</span><span class="o">.</span><span class="n">find_neighbors</span><span class="p">()</span>
+<span class="n">tree</span><span class="o">.</span><span class="n">get_interaction_lists</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This is a slightly modified and abridged version of the driver program <tt class="docutils literal"><span class="pre">examples/hypoct_driver.py</span></tt>.</p>
+</div>
+<div class="section" id="viewing-trees-in-1d-and-2d">
+<h2>Viewing trees in 1D and 2D<a class="headerlink" href="#viewing-trees-in-1d-and-2d" title="Permalink to this headline">¶</a></h2>
+<p>Trees in 1D and 2D can be viewed graphically using the <a class="reference internal" href="api.html#hypoct.tools.TreeViewer" title="hypoct.tools.TreeViewer"><tt class="xref py py-class docutils literal"><span class="pre">hypoct.tools.TreeViewer</span></tt></a> class. To use the viewer, type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">hypoct.tools</span> <span class="kn">import</span> <span class="n">TreeViewer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">view</span> <span class="o">=</span> <span class="n">TreeViewer</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="o">.</span><span class="n">draw_interactive</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This brings up an interactive session where each node in the tree is highlighted in turn, displaying its geometry, contained points, and neighbor and interaction list information, if available. Press <tt class="docutils literal"><span class="pre">Enter</span></tt> to step through the tree. All plot options can be controlled using <tt class="xref py py-mod docutils literal"><span class="pre">matplotlib</span></tt>-style keywords.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <a class="reference internal" href="api.html#hypoct.tools.TreeViewer" title="hypoct.tools.TreeViewer"><tt class="xref py py-class docutils literal"><span class="pre">hypoct.tools.TreeViewer</span></tt></a> class was written originally for 2D trees. It was extended to 1D trees by trivially lifting into 2D.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#initializing">Initializing</a></li>
+<li><a class="reference internal" href="#building-the-tree">Building the tree</a><ul>
+<li><a class="reference internal" href="#adaptivity-setting">Adaptivity setting</a></li>
+<li><a class="reference internal" href="#tree-depth">Tree depth</a></li>
+<li><a class="reference internal" href="#element-setting">Element setting</a></li>
+<li><a class="reference internal" href="#root-extent">Root extent</a></li>
+<li><a class="reference internal" href="#remarks">Remarks</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#generating-auxiliary-data">Generating auxiliary data</a></li>
+<li><a class="reference internal" href="#finding-neighbors">Finding neighbors</a></li>
+<li><a class="reference internal" href="#getting-interaction-lists">Getting interaction lists</a></li>
+<li><a class="reference internal" href="#searching-the-tree">Searching the tree</a></li>
+<li><a class="reference internal" href="#putting-it-all-together">Putting it all together</a></li>
+<li><a class="reference internal" href="#viewing-trees-in-1d-and-2d">Viewing trees in 1D and 2D</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="previous chapter">Installing</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="example.html"
+                        title="next chapter">Examples</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/tutorial.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="example.html" title="Examples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installing"
+             >previous</a> |</li>
+        <li><a href="index.html">hypoct 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Kenneth L. Ho.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

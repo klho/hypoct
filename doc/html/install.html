@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installing &mdash; hypoct 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="hypoct 0.1 documentation" href="index.html" />
+    <link rel="next" title="Tutorial" href="tutorial.html" />
+    <link rel="prev" title="Introduction" href="intro.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">hypoct 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installing">
+<h1>Installing<a class="headerlink" href="#installing" title="Permalink to this headline">¶</a></h1>
+<p>This section describes how to compile and install hypoct on Unix-like systems. Primary prerequisites include <a class="reference external" href="http://git-scm.com/">Git</a>, <a class="reference external" href="http://www.gnu.org/software/make/">GNU Make</a>, and a Fortran compiler such as <a class="reference external" href="http://gcc.gnu.org/wiki/GFortran">GFortran</a>. Secondary prerequisites, depending on which options are desired, include a C compiler such as <a class="reference external" href="http://gcc.gnu.org/">GCC</a> (for the C interface); <a class="reference external" href="http://www.scipy.org/F2py">F2PY</a>, <a class="reference external" href="http://www.python.org/">Python</a>, <a class="reference external" href="http://www.numpy.org/">NumPy</a>, and <a class="reference external" href="http://matplotlib.org/">matplotlib</a> (for the Python interface); and <a class="reference external" href="http://sphinx-doc.org/">Sphinx</a> and <a class="reference external" href="http://www.latex-project.org/">LaTeX</a> (for the documentation).</p>
+<p>hypoct has only been tested using the GFortran and GCC compilers; the use of all other compilers should be considered &#8220;at your own risk&#8221; (though they should really be fine).</p>
+<div class="section" id="code-repository">
+<h2>Code repository<a class="headerlink" href="#code-repository" title="Permalink to this headline">¶</a></h2>
+<p>All source files for hypoct (including those for this documentation) are available at <a class="reference external" href="https://github.com/klho/hypoct">https://github.com/klho/hypoct</a>. To download hypoct using Git, type the following command at the shell prompt:</p>
+<div class="highlight-python"><pre>$ git clone https://github.com/klho/hypoct /path/to/local/repository/</pre>
+</div>
+</div>
+<div class="section" id="compiling">
+<h2>Compiling<a class="headerlink" href="#compiling" title="Permalink to this headline">¶</a></h2>
+<p>There are several targets available to compile, namely:</p>
+<ul class="simple">
+<li>the main Fortran library;</li>
+<li>the C wrapper for the Fortran library;</li>
+<li>the Python wrapper for the Fortran library;</li>
+<li>this documentation; and</li>
+<li>driver programs calling the library from each of the above languages.</li>
+</ul>
+<p>To see all available targets, switch the working directory to the root of the local repository and type:</p>
+<div class="highlight-python"><pre>$ make help</pre>
+</div>
+<p>Hopefully the instructions are self-explanatory; for more explicit directions, please see below. Before beginning, view and edit the file <tt class="docutils literal"><span class="pre">Makefile</span></tt> to ensure that all options are properly set for your system. In particular, if you will not be using GFortran or GCC, be sure to set alternate compilers as appropriate.</p>
+<p>To compile the main Fortran library, type:</p>
+<div class="highlight-python"><pre>$ make fortran</pre>
+</div>
+<p>To compile the C wrapper, type:</p>
+<div class="highlight-python"><pre>$ make c</pre>
+</div>
+<p>To compile the Python wrapper, type:</p>
+<div class="highlight-python"><pre>$ make python</pre>
+</div>
+<p>To compile all three, type:</p>
+<div class="highlight-python"><pre>$ make</pre>
+</div>
+<p>or:</p>
+<div class="highlight-python"><pre>$ make all</pre>
+</div>
+<p>All object files are placed in the directory <tt class="docutils literal"><span class="pre">bin</span></tt>.</p>
+<p>To compile the documentation files, type:</p>
+<div class="highlight-python"><pre>$ make doc</pre>
+</div>
+<p>Output HTML and PDF files are placed in the directory <tt class="docutils literal"><span class="pre">doc</span></tt>.</p>
+</div>
+<div class="section" id="driver-programs">
+<h2>Driver programs<a class="headerlink" href="#driver-programs" title="Permalink to this headline">¶</a></h2>
+<p>hypoct also contains driver programs in Fortran, C, and Python to demonstrate the use of the library and its various wrappers. To compile the drivers, type:</p>
+<div class="highlight-python"><pre>$ make fortran_driver</pre>
+</div>
+<p>or:</p>
+<div class="highlight-python"><pre>$ make c_driver</pre>
+</div>
+<p>or:</p>
+<div class="highlight-python"><pre>$ make python_driver</pre>
+</div>
+<p>as appropriate. The above commands also automatically execute the corresponding programs. The driver programs are discussed in more detail in <a class="reference internal" href="tutorial.html"><em>Tutorial</em></a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installing</a><ul>
+<li><a class="reference internal" href="#code-repository">Code repository</a></li>
+<li><a class="reference internal" href="#compiling">Compiling</a></li>
+<li><a class="reference internal" href="#driver-programs">Driver programs</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="intro.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="next chapter">Tutorial</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/install.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorial"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">hypoct 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Kenneth L. Ho.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,345 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Python API &mdash; hypoct 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="hypoct 0.1 documentation" href="index.html" />
+    <link rel="prev" title="Examples" href="example.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="example.html" title="Examples"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">hypoct 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="python-api">
+<h1>Python API<a class="headerlink" href="#python-api" title="Permalink to this headline">¶</a></h1>
+<p>This section provides the auto-generated API for the Python modules <a class="reference internal" href="#module-hypoct" title="hypoct"><tt class="xref py py-mod docutils literal"><span class="pre">hypoct</span></tt></a> and <a class="reference internal" href="#module-hypoct.tools" title="hypoct.tools"><tt class="xref py py-mod docutils literal"><span class="pre">hypoct.tools</span></tt></a>.</p>
+<div class="section" id="module-hypoct">
+<span id="hypoct"></span><h2>hypoct<a class="headerlink" href="#module-hypoct" title="Permalink to this headline">¶</a></h2>
+<p>Python module for interfacing with <cite>hypoct</cite>.</p>
+<dl class="class">
+<dt id="hypoct.Tree">
+<em class="property">class </em><tt class="descclassname">hypoct.</tt><tt class="descname">Tree</tt><big>(</big><em>x</em>, <em>adap='a'</em>, <em>elem='p'</em>, <em>siz=0</em>, <em>occ=1</em>, <em>lvlmax=-1</em>, <em>ext=0</em><big>)</big><a class="headerlink" href="#hypoct.Tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build hyperoctree.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></tt></a>) &#8211; Point coordinates, where the coordinate of point <cite>i</cite> is <cite>x[:,i]</cite>.</li>
+<li><strong>adap</strong> ({<cite>&#8216;a&#8217;</cite>, <cite>&#8216;u&#8217;</cite>}) &#8211; Adaptivity setting: adaptive (<cite>&#8216;a&#8217;</cite>), uniform (<cite>&#8216;u&#8217;</cite>). This specifies
+whether nodes are divided adaptively or to a uniformly fine level.</li>
+<li><strong>elem</strong> ({<cite>&#8216;p&#8217;</cite>, <cite>&#8216;e&#8217;</cite>, <cite>&#8216;s&#8217;</cite>}) &#8211; Element type: point (<cite>&#8216;p&#8217;</cite>), element (<cite>&#8216;e&#8217;</cite>), sparse element (<cite>&#8216;s&#8217;</cite>). This
+specifies whether the input points represent true points or general elements
+(with sizes) that can extend beyond node boundaries. The element type
+determines how points are assigned to nodes and also how node neighbors are
+defined (see <a class="reference internal" href="#hypoct.Tree.find_neighbors" title="hypoct.Tree.find_neighbors"><tt class="xref py py-meth docutils literal"><span class="pre">find_neighbors()</span></tt></a>). If <cite>elem = &#8216;p&#8217;</cite>, then <cite>siz</cite> is
+ignored. Points and elements are intended to interact densely with each
+other, whereas sparse elements are intended to interact only by overlap.</li>
+<li><strong>siz</strong> (<a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></tt></a>) &#8211; Sizes associated with each point. If <cite>siz</cite> is a single float, then it is
+automatically expanded into an appropriately sized constant array. Not
+accessed if <cite>elem = &#8216;p&#8217;</cite>.</li>
+<li><strong>occ</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Maximum leaf occupancy. Requires <cite>occ &gt; 0</cite>.</li>
+<li><strong>lvlmax</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Maximum tree depth. The root is defined to have level zero. No maximum if
+<cite>lvlmax &lt; 0</cite>.</li>
+<li><strong>ext</strong> (<a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></tt></a>) &#8211; Extent of root node. If <cite>ext[i] &lt;= 0</cite>, then the extent in dimension <cite>i</cite> is
+calculated from the data. Its primary use is to force nodes to conform to a
+a specified geometry (see <a class="reference internal" href="#hypoct.Tree.find_neighbors" title="hypoct.Tree.find_neighbors"><tt class="xref py py-meth docutils literal"><span class="pre">find_neighbors()</span></tt></a>). If <cite>ext</cite> is a single
+float, then it is automatically expanded into an appropriately sized
+constant array.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="hypoct.Tree.find_neighbors">
+<tt class="descname">find_neighbors</tt><big>(</big><em>per=False</em><big>)</big><a class="headerlink" href="#hypoct.Tree.find_neighbors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find neighbors.</p>
+<p>The definition of a neighbor depends on the element type (see <a class="reference internal" href="#hypoct.Tree" title="hypoct.Tree"><tt class="xref py py-meth docutils literal"><span class="pre">Tree()</span></tt></a>).</p>
+<p>For points (<cite>elem = &#8216;p&#8217;</cite>), the neighbors of a given node consist of:</p>
+<ul class="simple">
+<li>All nodes at the same level immediately adjoining it (&#8220;one over&#8221;).</li>
+<li>All non-empty nodes at a coarser level (parent or above) immediately
+adjoining it.</li>
+</ul>
+<p>For elements and sparse elements (<cite>elem = &#8216;e&#8217;</cite> or <cite>&#8216;s&#8217;</cite>), first let the
+extension of a node be the spatial region corresponding to all possible
+point distributions belonging to that node.</p>
+<p>Then for elements (<cite>elem = &#8216;e&#8217;</cite>), the neighbors of a given node consist of:</p>
+<ul class="simple">
+<li>All nodes at the same level separated by at most the node&#8217;s size (&#8220;two
+over&#8221;)</li>
+<li>All non-empty nodes at a coarser level (parent or above) whose extensions
+are separated from its own extension by less than its extension&#8217;s size.</li>
+</ul>
+<p>Finally, for sparse elements (<cite>elem = &#8216;s&#8217;</cite>), the neighbors consist of:</p>
+<ul class="simple">
+<li>All nodes at the same level immediately adjoining it (&#8220;one over&#8221;).</li>
+<li>All non-empty nodes at a coarser level (parent or above) whose extensions
+overlap with its own extension.</li>
+</ul>
+<p>In all cases, a node is not considered its own neighbor.</p>
+<p>This routine requires that the child and geometry data have already been
+generated. If this is not the case, then this is done automatically.</p>
+<p>See <a class="reference internal" href="#hypoct.Tree.generate_child_data" title="hypoct.Tree.generate_child_data"><tt class="xref py py-meth docutils literal"><span class="pre">generate_child_data()</span></tt></a> and <a class="reference internal" href="#hypoct.Tree.generate_geometry_data" title="hypoct.Tree.generate_geometry_data"><tt class="xref py py-meth docutils literal"><span class="pre">generate_geometry_data()</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>per</strong> (<a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></tt></a>) &#8211; Periodicity of root note. The domain is periodic in dimension <cite>i</cite> if
+<cite>per[i] = True</cite>. If <cite>per</cite> is a single bool, then it is automatically
+expanded into an appropriately sized constant array. Use <cite>ext</cite> in
+<a class="reference internal" href="#hypoct.Tree" title="hypoct.Tree"><tt class="xref py py-meth docutils literal"><span class="pre">Tree()</span></tt></a> to control the extent of the root.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypoct.Tree.generate_child_data">
+<tt class="descname">generate_child_data</tt><big>(</big><big>)</big><a class="headerlink" href="#hypoct.Tree.generate_child_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate child data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypoct.Tree.generate_geometry_data">
+<tt class="descname">generate_geometry_data</tt><big>(</big><big>)</big><a class="headerlink" href="#hypoct.Tree.generate_geometry_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate geometry data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypoct.Tree.get_interaction_lists">
+<tt class="descname">get_interaction_lists</tt><big>(</big><big>)</big><a class="headerlink" href="#hypoct.Tree.get_interaction_lists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get interaction lists.</p>
+<p>The interaction list of a given node consists of:</p>
+<ul class="simple">
+<li>All nodes at the same level that are children of the neighbors of the
+node&#8217;s parent but not neighbors of the node itself.</li>
+<li>All non-empty nodes at a coarser level (parent or above) that are
+neighbors of the node&#8217;s parent but not neighbors of the node itself.</li>
+</ul>
+<p>This routine requires that the neighbor data have already been generated. If
+this is not the case, then this is done automatically (at default settings).</p>
+<p>See <a class="reference internal" href="#hypoct.Tree.find_neighbors" title="hypoct.Tree.find_neighbors"><tt class="xref py py-meth docutils literal"><span class="pre">find_neighbors()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypoct.Tree.search">
+<tt class="descname">search</tt><big>(</big><em>x</em>, <em>siz=0</em>, <em>mlvl=-1</em><big>)</big><a class="headerlink" href="#hypoct.Tree.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search hyperoctree.</p>
+<p>The element type of the points to search for are assumed to be the same as
+that used to construct the tree (see <a class="reference internal" href="#hypoct.Tree" title="hypoct.Tree"><tt class="xref py py-meth docutils literal"><span class="pre">Tree()</span></tt></a>).</p>
+<p>This routine requires that the child and geometry data have already been
+generated. If this is not the case, then this is done automatically.</p>
+<p>See <a class="reference internal" href="#hypoct.Tree.generate_child_data" title="hypoct.Tree.generate_child_data"><tt class="xref py py-meth docutils literal"><span class="pre">generate_child_data()</span></tt></a> and <a class="reference internal" href="#hypoct.Tree.generate_geometry_data" title="hypoct.Tree.generate_geometry_data"><tt class="xref py py-meth docutils literal"><span class="pre">generate_geometry_data()</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></tt></a>) &#8211; Point coordinates to search for, where the coordinate of point <cite>i</cite> is
+x[:,i]`.</li>
+<li><strong>siz</strong> (<a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></tt></a>) &#8211; Sizes associated with each point. If <cite>siz</cite> is a single float, then it is
+automatically expanded into an appropriately sized constant array. Not
+accessed if <cite>elem = &#8216;p&#8217;</cite>.</li>
+<li><strong>mlvl</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Maximum tree depth to search. Defaults to full tree depth if <cite>mlvl &lt; 0</cite>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Tree traversal array. The node containing point <cite>i</cite> at level <cite>j</cite> has index
+<cite>trav[i,j]</cite>; if no such node exists, then <cite>trav[i,j] = 0</cite>.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></tt></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-hypoct.tools">
+<span id="hypoct-tools"></span><h2>hypoct.tools<a class="headerlink" href="#module-hypoct.tools" title="Permalink to this headline">¶</a></h2>
+<p>Additional tools for <a class="reference internal" href="#module-hypoct" title="hypoct"><tt class="xref py py-mod docutils literal"><span class="pre">hypoct</span></tt></a>.</p>
+<dl class="class">
+<dt id="hypoct.tools.TreeViewer">
+<em class="property">class </em><tt class="descclassname">hypoct.tools.</tt><tt class="descname">TreeViewer</tt><big>(</big><em>tree</em><big>)</big><a class="headerlink" href="#hypoct.tools.TreeViewer" title="Permalink to this definition">¶</a></dt>
+<dd><p>View binary and quadtrees (1D and 2D hyperoctrees).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tree</strong> (<a class="reference internal" href="#hypoct.Tree" title="hypoct.Tree"><tt class="xref py py-class docutils literal"><span class="pre">hypoct.Tree</span></tt></a>) &#8211; Hyperoctree.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="hypoct.tools.TreeViewer.draw_base">
+<tt class="descname">draw_base</tt><big>(</big><em>c='k'</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#hypoct.tools.TreeViewer.draw_base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw wireframe outlines of all nodes in the tree.</p>
+<p>Accepts all <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v1.3.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.plot()</span></tt></a> keyword arguments.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypoct.tools.TreeViewer.draw_interactive">
+<tt class="descname">draw_interactive</tt><big>(</big><em>draw_neighbors=True</em>, <em>draw_interaction_list=True</em>, <em>base_c='k'</em>, <em>node_alpha=0.5</em>, <em>node_color='b'</em>, <em>nbor_alpha=0.5</em>, <em>nbor_color='r'</em>, <em>ilst_alpha=0.5</em>, <em>ilst_color='g'</em>, <em>point_c='k'</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#hypoct.tools.TreeViewer.draw_interactive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw each node in the tree sequentially via an interactive session (press
+<tt class="docutils literal"><span class="pre">Enter</span></tt> to continue) along with all neighbor and interaction list data, if
+available.</p>
+<p>All keyword arguments prefaced with <cite>&#8216;base_&#8217;</cite> are passed to
+<a class="reference internal" href="#hypoct.tools.TreeViewer.draw_base" title="hypoct.tools.TreeViewer.draw_base"><tt class="xref py py-meth docutils literal"><span class="pre">draw_base()</span></tt></a>; those prefaced with <cite>&#8216;node_&#8217;</cite> are passed to
+<a class="reference internal" href="#hypoct.tools.TreeViewer.draw_node" title="hypoct.tools.TreeViewer.draw_node"><tt class="xref py py-meth docutils literal"><span class="pre">draw_node()</span></tt></a> when drawing each node; those prefaced with <cite>&#8216;nbor_&#8217;</cite> are
+passed to <a class="reference internal" href="#hypoct.tools.TreeViewer.draw_node" title="hypoct.tools.TreeViewer.draw_node"><tt class="xref py py-meth docutils literal"><span class="pre">draw_node()</span></tt></a> when drawing each node neighbor; and those
+prefaced with <cite>&#8216;ilst_&#8217;</cite> are passed to <a class="reference internal" href="#hypoct.tools.TreeViewer.draw_node" title="hypoct.tools.TreeViewer.draw_node"><tt class="xref py py-meth docutils literal"><span class="pre">draw_node()</span></tt></a> when drawing each
+node in the interaction list.</p>
+<p>See <a class="reference internal" href="#hypoct.tools.TreeViewer.draw_base" title="hypoct.tools.TreeViewer.draw_base"><tt class="xref py py-meth docutils literal"><span class="pre">draw_base()</span></tt></a> and <a class="reference internal" href="#hypoct.tools.TreeViewer.draw_node" title="hypoct.tools.TreeViewer.draw_node"><tt class="xref py py-meth docutils literal"><span class="pre">draw_node()</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>draw_neighbors</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Whether to draw neighbors.</li>
+<li><strong>draw_interaction_list</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Whether to draw interaction lists.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypoct.tools.TreeViewer.draw_node">
+<tt class="descname">draw_node</tt><big>(</big><em>index</em>, <em>level=None</em>, <em>draw_points=True</em>, <em>update=True</em>, <em>node_alpha=0.5</em>, <em>node_color='b'</em>, <em>point_c='k'</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#hypoct.tools.TreeViewer.draw_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw node patch and, optionally, all points contained within it.</p>
+<p>The node is drawn as a <a class="reference external" href="http://matplotlib.org/api/artist_api.html#matplotlib.patches.Rectangle" title="(in Matplotlib v1.3.1)"><tt class="xref py py-class docutils literal"><span class="pre">matplotlib.patches.Rectangle</span></tt></a> instance.
+Points are drawn using <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter" title="(in Matplotlib v1.3.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.scatter()</span></tt></a>.</p>
+<p>All keyword arguments prefaced with <cite>&#8216;node_&#8217;</cite> are passed to the node drawing
+routine with the prefix stripped, and, similarly all arguments prefixed with
+<cite>&#8216;point_&#8217;</cite> are passed to the point drawing routine with the prefix stripped.
+For example, setting <cite>node_color=&#8217;r&#8217;</cite> and <cite>point_c=&#8217;b&#8217;</cite> passes the keyword
+argument <cite>color=&#8217;r&#8217;</cite> to the node drawer and <cite>c=&#8217;b&#8217;</cite> to the point drawer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>index</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Node index.</li>
+<li><strong>level</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Level of node. If <cite>None</cite>, the level is found automatically.</li>
+<li><strong>draw_points</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Whether to draw points contained in the node.</li>
+<li><strong>update</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Whether to update the plot after drawing the node.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Python API</a><ul>
+<li><a class="reference internal" href="#module-hypoct">hypoct</a></li>
+<li><a class="reference internal" href="#module-hypoct.tools">hypoct.tools</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="example.html"
+                        title="previous chapter">Examples</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/api.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="example.html" title="Examples"
+             >previous</a> |</li>
+        <li><a href="index.html">hypoct 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Kenneth L. Ho.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
