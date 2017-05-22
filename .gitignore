@@ -2,4 +2,5 @@
 *.mod
 *.so
 *.pyc
+doc/_build
 examples/hypoct_driver
