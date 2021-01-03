@@ -32,67 +32,71 @@ if __name__ == '__main__':
   x = np.array([np.cos(theta), np.sin(theta)], order='F')
 
   # print input summary
-  print "Number of points:                           %8i" % n
-  print "----------------------------------------------------"
+  print("Number of points:                           {:8d}".format(n))
+  print("----------------------------------------------------")
 
   # set print format
-  fmt = "%10.4e (s) / %6.2f (MB)"
+  fmt = "{:10.4e} (s) / {:6.2f} (MB)"
 
   # build tree
-  print "Building tree...            ",
-  t0 = time.clock()
+  print("Building tree...            ", end=" ")
+  t0 = time.perf_counter()
   tree = hypoct.Tree(x, occ=16)
-  t = time.clock() - t0
-  mb = 1e-6*(tree.lvlx.nbytes + tree.rootx.nbytes + tree.xi.nbytes +
-             tree.xp.nbytes + tree.nodex.nbytes)
-  print fmt % (t, mb)
+  t = time.perf_counter() - t0
+  mb = 1e-6*(tree.lvlx.nbytes + tree.rootx.nbytes + tree.xi.nbytes
+           + tree.xp.nbytes + tree.nodex.nbytes)
+  print(fmt.format(t, mb))
 
   # generate child data
-  print "Generating child data...    ",
-  t0 = time.clock()
+  print("Generating child data...    ", end=" ")
+  t0 = time.perf_counter()
   tree.generate_child_data()
-  t = time.clock() - t0
+  t = time.perf_counter() - t0
   mb = 1e-6*(tree.chldp.nbytes)
-  print fmt % (t, mb)
+  print(fmt.format(t, mb))
 
   # generate geometry data
-  print "Generating geometry data... ",
-  t0 = time.clock()
+  print("Generating geometry data... ", end=" ")
+  t0 = time.perf_counter()
   tree.generate_geometry_data()
-  t = time.clock() - t0
+  t = time.perf_counter() - t0
   mb = 1e-6*(tree.l.nbytes + tree.ctr.nbytes)
-  print fmt % (t, mb)
+  print(fmt.format(t, mb))
 
   # find neighbors
-  print "Finding neighbors...        ",
-  t0 = time.clock()
+  print("Finding neighbors...        ", end=" ")
+  t0 = time.perf_counter()
   tree.find_neighbors()
-  t = time.clock() - t0
+  t = time.perf_counter() - t0
   mb = 1e-6*(tree.nborp.nbytes + tree.nbori.nbytes)
-  print fmt % (t, mb)
+  print(fmt.format(t, mb))
 
   # get interaction lists
-  print "Getting interaction lists...",
-  t0 = time.clock()
+  print("Getting interaction lists...", end=" ")
+  t0 = time.perf_counter()
   tree.get_interaction_lists()
-  t = time.clock() - t0
+  t = time.perf_counter() - t0
   mb = 1e-6*(tree.ilstp.nbytes + tree.ilsti.nbytes)
-  print fmt % (t, mb)
+  print(fmt.format(t, mb))
 
   # search tree
-  print "Searching tree...           ",
+  print("Searching tree...           ", end=" ")
   m = 2**16;
   y = np.random.rand(2, m)
   y = 2*y - 1
-  t0 = time.clock()
+  t0 = time.perf_counter()
   trav = tree.search(y)
-  t = time.clock() - t0
+  t = time.perf_counter() - t0
   mb = 1e-6*trav.nbytes
-  print fmt % (t, mb)
+  print(fmt.format(t, mb))
 
   # print output summary
-  print "----------------------------------------------------"
-  print "Tree depth:                                 %8i" % tree.lvlx[1, 0]
-  print "Number of nodes:                            %8i" % tree.lvlx[0,-1]
-  print "Total number of neighbors:                  %8i" % tree.nborp[-1]
-  print "Total number of nodes in interaction lists: %8i" % tree.ilstp[-1]
+  print("----------------------------------------------------")
+  print("Tree depth:                                 {:8d}"
+          .format(tree.lvlx[1, 0]))
+  print("Number of nodes:                            {:8d}"
+          .format(tree.lvlx[0,-1]))
+  print("Total number of neighbors:                  {:8d}"
+          .format(tree.nborp[-1]))
+  print("Total number of nodes in interaction lists: {:8d}"
+          .format(tree.ilstp[-1]))

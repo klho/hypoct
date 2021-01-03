@@ -3,7 +3,7 @@ FC        = gfortran
 FFLAGS    = -fPIC -Wall -O3
 CC        = gcc
 CFLAGS    = -fPIC -Wall -O3
-F2PY      = f2py
+F2PY      = f2py3
 F2PYFLAGS = --fcompiler=gnu95
 PYTHON    = python
 
@@ -13,6 +13,9 @@ C        = c
 PYTHON   = python
 DOC      = doc
 EXAMPLES = examples
+
+F2PY_EXT = $(shell python3-config --extension-suffix)
+LIB_PY   = $(LIB)_python$(F2PY_EXT)
 
 vpath %.f90 $(SRC)
 vpath %.o   $(BIN)
@@ -30,18 +33,18 @@ $(LIB).o: $(LIB).f90
 $(LIB)_c.o: $(LIB)_c.f90 $(LIB).o
 	$(FC) $(FFLAGS) -J$(BIN) -c $< -o $(BIN)/$@
 
-$(LIB)_python.so: $(LIB)_python.f90 $(LIB).o
+$(LIB_PY): $(LIB)_python.f90 $(LIB).o
 	ln -s $(BIN)/$(LIB).mod
 	$(F2PY) -c -m $(LIB)_python $(F2PYFLAGS) $< $(BIN)/$(LIB).o
 	rm -f $(LIB).mod
-	mv $(LIB)_python.so $(BIN)
-	cd $(PYTHON) ; ln -fs ../$(BIN)/$(LIB)_python.so
+	mv $(LIB_PY) $(BIN)
+	cd $(PYTHON) ; ln -fs ../$(BIN)/$(LIB_PY)
 
 fortran: $(LIB).o
 
 c: fortran $(LIB)_c.o
 
-python: fortran $(LIB)_python.so
+python: fortran $(LIB_PY)
 
 doc: python
 	cd $(DOC) ; make html ; make latexpdf
@@ -55,7 +58,7 @@ c_driver: c $(LIB).h
 	cd $(EXAMPLES) ; ./$(LIB)_driver
 
 python_driver: python
-	cd $(EXAMPLES) ; python $(LIB)_driver.py
+	cd $(EXAMPLES) ; python3 $(LIB)_driver.py
 
 clean: clean_fortran clean_c clean_python clean_doc clean_driver
 
@@ -66,8 +69,8 @@ clean_c:
 	rm -f $(BIN)/$(LIB)_c.o $(BIN)/$(LIB)_c.mod
 
 clean_python:
-	cd $(BIN) ; rm -f $(LIB)_python.so
-	cd $(PYTHON) ; rm -f $(LIB)_python.so
+	cd $(BIN) ; rm -f $(LIB_PY)
+	cd $(PYTHON) ; rm -f $(LIB_PY)
 	cd $(PYTHON)/hypoct ; rm -f __init__.pyc tools.pyc
 
 clean_doc:

@@ -171,8 +171,6 @@ class TreeViewer:
     node_kwargs.update(point_kwargs)
 
     # draw outlines of all nodes
-    plt.ion()
-    plt.show()
     self.draw_base(**base_kwargs)
     axis = plt.axis('equal')
     axis = (axis[0] - 0.05*(axis[1] - axis[0]),
@@ -180,13 +178,15 @@ class TreeViewer:
             axis[2] - 0.05*(axis[3] - axis[2]),
             axis[3] + 0.05*(axis[3] - axis[2]))
     plt.axis(axis)
+    plt.ion()
+    plt.show()
 
     # loop through all nodes
     for i in range(self.tree.lvlx[1,0]+1):
       for j in range(self.tree.lvlx[0,i], self.tree.lvlx[0,i+1]):
 
         # wait for keyboard input
-        raw_input()
+        input()
 
         # delete all node patches and points
         plt.gca().patches     = []
@@ -227,4 +227,4 @@ class TreeViewer:
             s += '\n'
 
         # print description
-        print s.rstrip('\n')
+        print(s.rstrip('\n'))
