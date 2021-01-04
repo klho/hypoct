@@ -71,13 +71,13 @@ clean_c:
 clean_python:
 	cd $(BIN) ; rm -f $(LIB_PY)
 	cd $(PYTHON) ; rm -f $(LIB_PY)
-	cd $(PYTHON)/hypoct ; rm -f __init__.pyc tools.pyc
+	cd $(PYTHON)/hypoct ; rm -rf __pycache__
 
 clean_doc:
 	cd $(DOC); make clean
 
 clean_driver:
-	cd $(EXAMPLES) ; rm -f $(LIB)_driver $(LIB)_driver.pyc
+	cd $(EXAMPLES) ; rm -f $(LIB)_driver
 
 rebuild: clean all
 
